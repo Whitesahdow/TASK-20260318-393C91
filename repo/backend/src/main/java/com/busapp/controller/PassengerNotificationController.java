@@ -72,10 +72,10 @@ public class PassengerNotificationController {
 
     @PostMapping("/missed-checkin")
     public ResponseEntity<com.busapp.model.MessageResponse> enqueueMissedCheckIn(
-            @RequestBody Map<String, String> body
+            @RequestBody java.util.Map<String, String> body
     ) {
-        LocalDateTime startTime = LocalDateTime.parse(body.get("busStartTime"));
-        return ResponseEntity.ok(new com.busapp.model.MessageResponse(notificationService.enqueueMissedCheckIn(getUsername(), startTime)));
+        java.time.LocalDateTime startTime = java.time.LocalDateTime.parse(body.get("busStartTime"));
+        String stopName = body.getOrDefault("stopName", "Unknown Stop");
+        return ResponseEntity.ok(new com.busapp.model.MessageResponse(notificationService.enqueueMissedCheckIn(getUsername(), startTime, stopName)));
     }
 }
-

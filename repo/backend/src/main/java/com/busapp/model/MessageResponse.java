@@ -11,8 +11,7 @@ public class MessageResponse {
     public MessageResponse(MessageTask task) {
         this.typeLabel = task.getTypeLabel();
         this.status = task.getStatus().name();
-        this.finalContent = task.getRawContent() != null ? 
-            task.getRawContent().replaceAll("(?<=.{4}).(?=.{4})", "*") : "";
+        this.finalContent = task.getFinalContent();
         this.scheduledAt = task.getScheduledAt();
     }
 

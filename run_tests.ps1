@@ -11,7 +11,7 @@ $maxRetries = 60
 $count = 0
 while ($count -lt $maxRetries) {
     try {
-        $resp = Invoke-WebRequest -Uri "http://localhost:8080/api/health" -Method Head -UseBasicParsing
+        $resp = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/health" -Method Head -UseBasicParsing
         if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400) {
             break
         }
@@ -71,7 +71,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ">>> [10/18] Verifying Trace ID in Headers..."
-$headersResp = Invoke-WebRequest -Uri "http://localhost:8080/api/health" -Method Head -UseBasicParsing
+$headersResp = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/health" -Method Head -UseBasicParsing
 $traceId = $headersResp.Headers["X-Trace-ID"]
 
 if ([string]::IsNullOrWhiteSpace($traceId)) {
@@ -88,8 +88,21 @@ if ($adminRow -match '^admin:ADMIN:\$2') {
 }
 
 Write-Host ">>> [12/18] Verifying Registration Boundary..."
-$registerCode = curl.exe -s -o NUL -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"username":"fail_user","password":"123","role":"PASSENGER"}' http://localhost:8080/api/auth/register
-if ($registerCode -eq "400") {
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/health" -SessionVariable regSession -UseBasicParsing | Out-Null
+$regToken = ""
+foreach ($cookie in $regSession.Cookies.GetCookies("http://localhost:8080")) {
+    if ($cookie.Name -eq "XSRF-TOKEN") { $regToken = $cookie.Value }
+}
+$regHeaders = @{ "X-XSRF-TOKEN" = $regToken; "Content-Type" = "application/json" }
+
+try {
+    Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register" -Method Post -Headers $regHeaders -WebSession $regSession -Body '{"username":"fail_user","password":"123","role":"PASSENGER"}' -UseBasicParsing | Out-Null
+    $registerCode = 200
+} catch {
+    $registerCode = $_.Exception.Response.StatusCode.value__
+}
+
+if ($registerCode -eq 400) {
     Write-Host "SUCCESS: Server rejected weak password (8-char rule active)."
 } else {
     throw "FAILED: Server accepted weak password or returned unexpected status."
@@ -119,8 +132,19 @@ $secondImportPayload = @{
     price = "5700 yuan/month"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:8080/api/admin/stops/import" -Method Post -ContentType "application/json" -Body $firstImportPayload | Out-Null
-Invoke-RestMethod -Uri "http://localhost:8080/api/admin/stops/import" -Method Post -ContentType "application/json" -Body $secondImportPayload | Out-Null
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/login" -Method Post -ContentType "application/json" -Body (@{
+    username = "admin"
+    password = if ($env:ADMIN_INITIAL_PASSWORD) { $env:ADMIN_INITIAL_PASSWORD } else { "admin12345" }
+} | ConvertTo-Json) -SessionVariable adminSession | Out-Null
+
+$adminToken = ""
+foreach ($cookie in $adminSession.Cookies.GetCookies("http://localhost:8080")) {
+    if ($cookie.Name -eq "XSRF-TOKEN") { $adminToken = $cookie.Value }
+}
+$adminHeaders = @{ "X-XSRF-TOKEN" = $adminToken }
+
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/admin/stops/import-json" -Method Post -ContentType "application/json" -Headers $adminHeaders -WebSession $adminSession -Body $firstImportPayload | Out-Null
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/admin/stops/import-json" -Method Post -ContentType "application/json" -Headers $adminHeaders -WebSession $adminSession -Body $secondImportPayload | Out-Null
 
 $versionCount = docker exec bus_db psql -U bus_admin -d city_bus_platform -t -A -c "SELECT count(*) FROM stop_version WHERE stop_name='Audit Stop';"
 $latestVersion = docker exec bus_db psql -U bus_admin -d city_bus_platform -t -A -c "SELECT version_number FROM stop_version WHERE stop_name='Audit Stop' ORDER BY version_number DESC LIMIT 1;"
@@ -142,7 +166,7 @@ if (-not $logHit) {
 Write-Host "SUCCESS: Missing values are being logged to audit trail."
 
 Write-Host ">>> [15/18] Verifying search API initials matching and deduplication..."
-$searchResultRaw = Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/search?query=CA" -Method Get
+$searchResultRaw = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/search/autocomplete?query=CA" -Method Get
 $searchResultJson = $searchResultRaw | ConvertTo-Json -Depth 10
 if ($searchResultJson -notmatch "Central Avenue") {
     throw "FAILED: Search did not return Central Avenue for query CA."
@@ -156,7 +180,7 @@ Write-Host "SUCCESS: Pinyin/initial matching and deduplication verified."
 Write-Host ">>> [16/18] Verifying message masking and queue trace logs..."
 $phase6User = "phase6_passenger"
 try {
-    Invoke-RestMethod -Uri "http://localhost:8080/api/auth/register" -Method Post -ContentType "application/json" -Body (@{
+    Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/register" -Method Post -Headers $regHeaders -WebSession $regSession -Body (@{
         username = "phase6_passenger"
         password = "phase6pass123"
         role = "PASSENGER"
@@ -167,9 +191,20 @@ try {
         throw "FAILED: Could not ensure passenger test user exists (HTTP $statusCode)."
     }
 }
-Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/reminder?username=$phase6User" -Method Post -ContentType "application/json" -Body '{"stopName":"Central Avenue 3500"}' | Out-Null
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/auth/login" -Method Post -ContentType "application/json" -Body (@{
+    username = "phase6_passenger"
+    password = "phase6pass123"
+} | ConvertTo-Json) -SessionVariable webSession | Out-Null
+
+$passToken = ""
+foreach ($cookie in $webSession.Cookies.GetCookies("http://localhost:8080")) {
+    if ($cookie.Name -eq "XSRF-TOKEN") { $passToken = $cookie.Value }
+}
+$passHeaders = @{ "X-XSRF-TOKEN" = $passToken }
+
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/notifications/reservations" -Method Post -ContentType "application/json" -Headers $passHeaders -WebSession $webSession -Body '{"stopName":"Central Avenue 3500", "arrivalEta":"2030-01-01T10:00:00"}' | Out-Null
 Start-Sleep -Seconds 65
-$maskedMsg = Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/latest?username=$phase6User" -Method Get
+$maskedMsg = Invoke-RestMethod -Uri "http://localhost:8080/api/v1/notifications/latest" -Method Get -WebSession $webSession
 if (($maskedMsg.finalContent | Out-String) -notmatch "\*\*\*\*") {
     throw "FAILED: Sensitive content not masked in latest message."
 }
@@ -188,7 +223,7 @@ if (-not (Test-Path $backupFile)) {
 Write-Host "SUCCESS: Local backup generated."
 
 Write-Host ">>> [18/18] Simulating P95 alert diagnostic..."
-Invoke-RestMethod -Uri "http://localhost:8080/api/admin/maintenance/monitor/simulate-p95" -Method Get | Out-Null
+Invoke-RestMethod -Uri "http://localhost:8080/api/v1/admin/maintenance/monitor/simulate-p95" -Method Get -WebSession $adminSession | Out-Null
 $diagLog = docker logs bus_backend 2>&1 | Select-String -Pattern "Diagnostic Report Generated"
 if (-not $diagLog) {
     throw "FAILED: P95 diagnostic report log not found."

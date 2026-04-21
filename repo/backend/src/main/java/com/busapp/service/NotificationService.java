@@ -42,6 +42,7 @@ public class NotificationService {
         UserEntity user = findUser(username);
         NotificationPreference pref = preferenceRepository.findById(user.getId()).orElseGet(() -> defaultPreference(user.getId()));
         pref.setArrivalRemindersEnabled(incoming.isArrivalRemindersEnabled());
+        pref.setQuietHoursEnabled(incoming.isQuietHoursEnabled());
         pref.setDndStart(incoming.getDndStart() == null ? LocalTime.of(22, 0) : incoming.getDndStart());
         pref.setDndEnd(incoming.getDndEnd() == null ? LocalTime.of(7, 0) : incoming.getDndEnd());
         pref.setLeadTimeMinutes(incoming.getLeadTimeMinutes() <= 0 ? 10 : incoming.getLeadTimeMinutes());
@@ -79,7 +80,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public MessageTask enqueueMissedCheckIn(String username, LocalDateTime busStartTime) {
+    public MessageTask enqueueMissedCheckIn(String username, LocalDateTime busStartTime, String stopName) {
         if (!checkMissedCheckIn(busStartTime)) {
             throw new ValidationException("Missed check-in threshold has not been reached yet.");
         }
@@ -87,7 +88,7 @@ public class NotificationService {
         MessageTask task = new MessageTask();
         task.setUserId(user.getId());
         task.setTypeLabel("Missed Check-in");
-        task.setRawContent("Check-in missed for your reservation at stop " + "Central Avenue");
+        task.setRawContent("Check-in missed for your reservation at stop " + (stopName != null ? stopName : "Unknown"));
         task.setScheduledAt(LocalDateTime.now().minusSeconds(1));
         task.setStatus(MessageStatus.PENDING);
         task.setSensitivity(sensitivityForRole(user.getRole()));

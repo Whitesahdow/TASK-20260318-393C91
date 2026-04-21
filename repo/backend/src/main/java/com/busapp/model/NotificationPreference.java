@@ -16,6 +16,9 @@ public class NotificationPreference {
     private boolean arrivalRemindersEnabled = true;
 
     @Column(nullable = false)
+    private boolean quietHoursEnabled = false;
+
+    @Column(nullable = false)
     private LocalTime dndStart = LocalTime.of(22, 0);
 
     @Column(nullable = false)
@@ -38,6 +41,14 @@ public class NotificationPreference {
 
     public void setArrivalRemindersEnabled(boolean arrivalRemindersEnabled) {
         this.arrivalRemindersEnabled = arrivalRemindersEnabled;
+    }
+
+    public boolean isQuietHoursEnabled() {
+        return quietHoursEnabled;
+    }
+
+    public void setQuietHoursEnabled(boolean quietHoursEnabled) {
+        this.quietHoursEnabled = quietHoursEnabled;
     }
 
     public LocalTime getDndStart() {

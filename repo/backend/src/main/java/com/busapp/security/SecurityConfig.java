@@ -35,10 +35,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/actuator/**", "/api/v1/health").permitAll()
+                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/health").permitAll()
                 .requestMatchers("/api/v1/passenger/**", "/api/v1/search/**", "/api/v1/stops/**", "/api/v1/notifications/**").hasRole("PASSENGER")
                 .requestMatchers("/api/v1/dispatch/**", "/api/v1/dispatcher/**").hasAnyRole("DISPATCHER", "ADMIN")
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/admin/**", "/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex

@@ -31,7 +31,7 @@ Pinyin Support: Search matches pinyin_initials and pinyin_full fields in the dat
 Notifications & Preferences
 Method	Path	Auth	Description
 GET	/notifications	Auth	List unified notifications from Message Center
-PATCH	/notifications/preferences	Auth	Toggle arrival reminders and set DND windows
+PUT	/notifications/preferences	Auth	Toggle arrival reminders and set DND windows
 POST	/notifications/reservations	Auth	Create a reservation and queue a reminder
 Do Not Disturb (DND) Window
 PATCH /notifications/preferences accepts dnd_start and dnd_end (e.g., 22:00, 07:00).
@@ -39,14 +39,15 @@ Scheduled tasks will suppress notifications if the current time falls within thi
 Workflow & Dispatching (Dispatcher)
 Method	Path	Auth	Description
 GET	/dispatch/tasks	Dispatcher	List approval tasks with visual progress status
-PATCH	/dispatch/tasks/{taskId}/approve	Dispatcher	Approve or Return task (Conditional Branching)
+POST	/dispatch/tasks/{taskId}/approve	Dispatcher	Approve or Return task (Conditional Branching)
 POST	/dispatch/tasks/batch-approve	Dispatcher	Batch process selected routine approvals
 Workflow Constraints
 Conditional Branching: Tasks are automatically categorized as ROUTINE or RISKY (e.g., GPS coord changes).
 Escalation: Tasks unprocessed for 24 hours trigger an escalation warning to Admin.
 Data Integration & Maintenance (Admin)
 Method	Path	Auth	Description
-POST	/admin/import	Admin	Parse HTML/JSON templates and trigger cleaning
+POST	/admin/stops/import	Admin	Parse HTML templates and trigger cleaning
+POST	/admin/stops/import-json	Admin	Parse JSON templates and trigger cleaning
 GET	/admin/audit-logs	Admin	View data cleaning history and source logs
 PUT	/admin/dictionaries	Admin	Maintain field standard dictionaries (sqm, yuan)
 PUT	/admin/ranking-weights	Admin	Adjust Frequency vs Popularity weights

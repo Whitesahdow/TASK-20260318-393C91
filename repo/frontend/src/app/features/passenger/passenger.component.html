@@ -37,7 +37,8 @@
             <td>{{ res.routeNumber }}</td>
             <td>{{ res.stopName }}</td>
             <td>
-              <button type="button" (click)="toggleReminder(res)" class="btn-notify">
+              <input type="datetime-local" [(ngModel)]="res.arrivalEta" [disabled]="res.reminderEnabled" />
+              <button type="button" (click)="toggleReminder(res)" class="btn-notify" [disabled]="res.reminderEnabled">
                 {{ res.reminderEnabled ? 'Reminder On' : 'Set Reminder' }}
               </button>
             </td>
@@ -50,6 +51,10 @@
       <h3>Do Not Disturb Window</h3>
       <label class="inline">
         <input type="checkbox" [(ngModel)]="prefs.arrivalRemindersEnabled" />
+        Enable arrival reminders
+      </label>
+      <label class="inline">
+        <input type="checkbox" [(ngModel)]="prefs.quietHoursEnabled" />
         Enable quiet hours
       </label>
       <div class="dnd-row">
@@ -62,7 +67,7 @@
       </button>
       <p class="muted">
         Configured window:
-        {{ prefs.arrivalRemindersEnabled ? (prefs.dndStart + ' - ' + prefs.dndEnd) : 'Disabled' }}
+        {{ prefs.quietHoursEnabled ? (prefs.dndStart + ' - ' + prefs.dndEnd) : 'Disabled' }}
       </p>
     </article>
 

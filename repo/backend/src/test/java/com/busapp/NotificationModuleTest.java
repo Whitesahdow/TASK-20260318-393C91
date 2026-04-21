@@ -43,4 +43,16 @@ public class NotificationModuleTest {
         boolean shouldTrigger = notificationService.checkMissedCheckIn(busStartTime);
         assertTrue(shouldTrigger);
     }
+
+    @Test
+    void whenTimeIs2300_andDNDIs22to07_andQuietHoursDisabled_thenDoNotSuppress() {
+        NotificationScheduler scheduler = new NotificationScheduler(queueRepository, preferenceRepository);
+        LocalTime now = LocalTime.of(23, 0);
+        NotificationPreference pref = new NotificationPreference();
+        pref.setDndStart(LocalTime.of(22, 0));
+        pref.setDndEnd(LocalTime.of(7, 0));
+        pref.setQuietHoursEnabled(false);
+
+        org.junit.jupiter.api.Assertions.assertFalse(scheduler.isInsideDND(now, pref), "Notification should not be suppressed if quiet hours are disabled");
+    }
 }

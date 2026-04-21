@@ -51,6 +51,7 @@ public class SecurityModuleTest {
     void whenPasswordShort_thenReturns400() throws Exception {
         String shortPasswordJson = "{\"username\":\"test\", \"password\":\"123\"}";
         mockMvc.perform(post("/api/v1/auth/login")
+                .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(shortPasswordJson))
                 .andExpect(status().isBadRequest());
@@ -82,5 +83,53 @@ public class SecurityModuleTest {
         verify(userRepository).save(captor.capture());
         assertEquals("hashed_val", captor.getValue().getPasswordHash());
         assertEquals(UserRole.PASSENGER, captor.getValue().getRole());
+    }
+
+    @Test
+    void register_WithDuplicateUsername_ShouldThrowException() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("user");
+        request.setPassword("validPassword123");
+        request.setRole(UserRole.PASSENGER);
+
+        when(userRepository.existsByUsername("user")).thenReturn(true);
+
+        assertThrows(com.busapp.service.DuplicateException.class, () -> authService.register(request));
+    }
+
+    @Test
+    void register_WithAdminRole_ShouldForcePassengerRole() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("hacker");
+        request.setPassword("validPassword123");
+        request.setRole(UserRole.ADMIN);
+
+        when(userRepository.existsByUsername("hacker")).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("hashed_val");
+
+        authService.register(request);
+
+        ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+        verify(userRepository).save(captor.capture());
+        assertEquals(UserRole.PASSENGER, captor.getValue().getRole(), "Role must be downgraded to PASSENGER");
+    }
+
+    @Test
+    @org.springframework.security.test.context.support.WithMockUser(roles = "PASSENGER")
+    void whenPassengerAccessesAdmin_thenReturns403() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/admin/maintenance/templates"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void whenUnauthenticatedAccessesPassenger_thenReturns401() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/v1/notifications"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void whenUnauthenticatedAccessesActuator_thenReturns401() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/actuator/health"))
+                .andExpect(status().isUnauthorized());
     }
 }

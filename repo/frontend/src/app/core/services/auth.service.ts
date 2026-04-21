@@ -31,8 +31,16 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem('user');
-    this.currentUserSubject.next(null);
+    this.http.post('/api/v1/auth/logout', {}).subscribe({
+      next: () => {
+        localStorage.removeItem('user');
+        this.currentUserSubject.next(null);
+      },
+      error: () => {
+        localStorage.removeItem('user');
+        this.currentUserSubject.next(null);
+      }
+    });
   }
 
   routeForRole(role: UserRole): string {

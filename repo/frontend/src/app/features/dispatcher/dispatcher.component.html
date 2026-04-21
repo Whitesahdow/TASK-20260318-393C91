@@ -24,7 +24,7 @@
           <div class="progress-bar">
             <div [style.width.%]="task.progress"></div>
           </div>
-          <span class="status-pill" [ngClass]="task.branch.toLowerCase()">{{ task.status }} · {{ task.branch }}</span>
+          <span class="status-pill" [ngClass]="task.branch.toLowerCase()">{{ task.status }} - {{ task.branch }}</span>
           <button type="button" (click)="returnTask(task.id)">Return</button>
           <button type="button" (click)="approveTask(task.id)">Approve</button>
         </div>

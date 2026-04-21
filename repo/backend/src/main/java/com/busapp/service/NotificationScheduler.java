@@ -59,6 +59,9 @@ public class NotificationScheduler {
     }
 
     public boolean isInsideDND(LocalTime now, NotificationPreference pref) {
+        if (!pref.isQuietHoursEnabled()) {
+            return false;
+        }
         if (pref.getDndStart().equals(pref.getDndEnd())) {
             return false;
         }

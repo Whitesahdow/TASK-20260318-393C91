@@ -39,4 +39,30 @@ public class WorkflowModuleTest {
         assertEquals("RISKY", processed.getBranch());
         assertEquals(TaskStatus.PENDING, processed.getStatus());
     }
+
+    @Test
+    void testBatchApproveRoutineTasks() {
+        WorkflowTask task1 = new WorkflowTask();
+        task1.setId(1L);
+        task1.setType(TaskType.REMINDER_RULE);
+        task1.setHighImpact(false);
+        task1.setStatus(TaskStatus.PENDING);
+        
+        WorkflowTask task2 = new WorkflowTask();
+        task2.setId(2L);
+        task2.setType(TaskType.ABNORMAL_DATA_REVIEW);
+        task2.setHighImpact(false);
+        task2.setStatus(TaskStatus.PENDING);
+        
+        when(taskRepository.findById(1L)).thenReturn(Optional.of(task1));
+        when(taskRepository.findById(2L)).thenReturn(Optional.of(task2));
+        when(taskRepository.save(any(WorkflowTask.class))).thenAnswer(i -> i.getArguments()[0]);
+        
+        workflowService.batchApprove(List.of(1L, 2L));
+        
+        assertEquals(TaskStatus.APPROVED, task1.getStatus());
+        assertEquals("ROUTINE", task1.getBranch());
+        assertEquals(TaskStatus.APPROVED, task2.getStatus());
+        assertEquals("ROUTINE", task2.getBranch());
+    }
 }

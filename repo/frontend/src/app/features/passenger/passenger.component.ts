@@ -12,11 +12,13 @@ interface SearchResult {
   score: number;
   popularity: number;
   reminderEnabled?: boolean;
+  arrivalEta?: string;
 }
 
 interface NotificationPreference {
   userId: number;
   arrivalRemindersEnabled: boolean;
+  quietHoursEnabled: boolean;
   dndStart: string;
   dndEnd: string;
   leadTimeMinutes: number;
@@ -44,6 +46,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
   prefs: NotificationPreference = {
     userId: 0,
     arrivalRemindersEnabled: true,
+    quietHoursEnabled: false,
     dndStart: '22:00',
     dndEnd: '07:00',
     leadTimeMinutes: 10
@@ -117,11 +120,15 @@ export class PassengerComponent implements OnInit, OnDestroy {
       this.error = 'You must be logged in.';
       return;
     }
+    if (!result.arrivalEta) {
+      this.error = 'Please provide an arrival ETA for the reminder.';
+      return;
+    }
     this.http.post(
       `/api/v1/notifications/reservations`,
       { 
         stopName: result.stopName,
-        arrivalEta: new Date(Date.now() + 60 * 60 * 1000).toISOString() // Mock 1 hour ETA
+        arrivalEta: new Date(result.arrivalEta).toISOString()
       }
     ).subscribe({
       next: () => {
