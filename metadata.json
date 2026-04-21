@@ -1,0 +1,9 @@
+{
+  "project_type": "fullstack",
+  "prompt": "City Bus Operation and Service Coordination Platform",
+  "frontend_tech": "Angular",
+  "backend_tech": "Spring Boot (Java 17)",
+  "database": "PostgreSQL",
+  "deployment": "Docker (Offline LAN)",
+  "status": "Phase 1 - Scaffold Implemented"
+}

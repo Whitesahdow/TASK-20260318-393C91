@@ -1,0 +1,136 @@
+<main class="page">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">City Bus Operation and Service Coordination Platform</p>
+      <h1>Interactive Frontend Verification Console</h1>
+      <p class="subtitle">
+        This Angular interface simulates passenger search, dispatcher task flow, and administrator controls.
+      </p>
+    </div>
+    <div class="health-card" [class.down]="backendStatus !== 'UP'">
+      <p class="card-label">Backend Health</p>
+      <h2>{{ backendStatus }}</h2>
+      <p>{{ backendService }}</p>
+      <p class="trace">Trace ID: {{ traceId }}</p>
+      <button type="button" (click)="refreshBackendStatus()">Refresh</button>
+    </div>
+  </header>
+
+  <section class="grid two-col">
+    <article class="panel reveal-1">
+      <h3>Passenger Search</h3>
+      <p>Search by route, stop name, keyword, or initials.</p>
+      <div class="search-row">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applySearch()"
+          placeholder="Try: B12, Maple, SR, RH"
+        />
+        <button type="button" (click)="applySearch()">Search</button>
+      </div>
+
+      <div class="chips" *ngIf="suggestions.length > 0">
+        <button type="button" *ngFor="let item of suggestions" (click)="useSuggestion(item)">{{ item }}</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Stop</th>
+              <th>Initials</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of searchResults">
+              <td>{{ row.route }}</td>
+              <td>{{ row.stopName }}</td>
+              <td>{{ row.pinyinInitials }}</td>
+              <td>{{ row.frequencyPriority * 0.6 + row.popularityScore * 0.4 | number : '1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel reveal-2">
+      <h3>Notification Preferences</h3>
+      <p>Reminder options with do-not-disturb period.</p>
+
+      <label class="switch-row">
+        <span>Arrival reminder enabled</span>
+        <input type="checkbox" [(ngModel)]="reminderEnabled" />
+      </label>
+
+      <div class="form-grid">
+        <label>
+          Do not disturb start
+          <input type="time" [(ngModel)]="dndStart" />
+        </label>
+        <label>
+          Do not disturb end
+          <input type="time" [(ngModel)]="dndEnd" />
+        </label>
+        <label>
+          Reminder lead time (minutes)
+          <input type="number" min="1" max="120" [(ngModel)]="leadTimeMinutes" />
+        </label>
+      </div>
+
+      <div class="summary-box">
+        <p><strong>Status:</strong> {{ reminderEnabled ? 'On' : 'Off' }}</p>
+        <p><strong>DND:</strong> {{ dndStart }} - {{ dndEnd }}</p>
+        <p><strong>Lead Time:</strong> {{ leadTimeMinutes }} minutes</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid two-col">
+    <article class="panel reveal-3">
+      <h3>Dispatcher Task Board</h3>
+      <p>Approval and review queue with progress tracking.</p>
+      <div class="task-list">
+        <div class="task" *ngFor="let task of dispatcherTasks">
+          <div class="task-head">
+            <strong>{{ task.name }}</strong>
+            <span>{{ task.state }}</span>
+          </div>
+          <p>Branch: {{ task.branch }}</p>
+          <div class="meter">
+            <span [style.width.%]="task.progress"></span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel reveal-4">
+      <h3>Message Center</h3>
+      <p>Unified notifications for reservations, reminders, and misses.</p>
+      <div class="message-list">
+        <div class="message" *ngFor="let item of messages">
+          <div>
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.detail }}</p>
+          </div>
+          <span>{{ item.minutesAgo }}m ago</span>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid one-col">
+    <article class="panel reveal-5">
+      <h3>Administrator Control Snapshot</h3>
+      <p>Template, sorting weight, and field dictionary controls.</p>
+      <div class="admin-grid">
+        <div class="admin-item" *ngFor="let control of adminControls">
+          <span>{{ control.key }}</span>
+          <strong>{{ control.value }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
