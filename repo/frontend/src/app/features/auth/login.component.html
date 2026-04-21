@@ -1,22 +1,6 @@
 <section class="auth-page">
-  <article class="hero-panel">
-    <p class="eyebrow">City Bus Operation and Service Coordination Platform</p>
-    <h1>Secure Sign In</h1>
-    <p>
-      Sign in to your role-specific workspace. Use your assigned local account in this offline LAN environment.
-    </p>
-
-    <div class="health-card" [class.down]="backendStatus !== 'UP'">
-      <p class="label">Backend Health</p>
-      <strong>{{ backendStatus }}</strong>
-      <span>{{ backendService }}</span>
-      <small>Trace ID: {{ traceId }}</small>
-      <button type="button" (click)="refreshBackendStatus()">Refresh Health</button>
-    </div>
-  </article>
 
   <article class="form-panel">
-    <h2>Welcome Back</h2>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <label>
         Username

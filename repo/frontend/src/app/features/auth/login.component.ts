@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,9 +15,6 @@ import { AuthService } from '../../core/services/auth.service';
 export class LoginComponent implements OnInit {
   error = '';
   submitting = false;
-  backendStatus = 'CHECKING';
-  backendService = 'Loading...';
-  traceId = 'N/A';
 
   loginForm = this.fb.group({
     username: ['', Validators.required],
@@ -28,13 +24,10 @@ export class LoginComponent implements OnInit {
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly http: HttpClient
+    private readonly router: Router
   ) {}
 
-  ngOnInit(): void {
-    this.refreshBackendStatus();
-  }
+  ngOnInit(): void {}
 
   onSubmit(): void {
     this.error = '';
@@ -76,18 +69,4 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  refreshBackendStatus(): void {
-    this.http.get<{ status: string; service: string }>('/api/health', { observe: 'response' }).subscribe({
-      next: (response: HttpResponse<{ status: string; service: string }>) => {
-        this.backendStatus = response.body?.status ?? 'UNKNOWN';
-        this.backendService = response.body?.service ?? 'Unknown service';
-        this.traceId = response.headers.get('X-Trace-ID') ?? 'N/A';
-      },
-      error: () => {
-        this.backendStatus = 'DOWN';
-        this.backendService = 'Cannot reach backend';
-        this.traceId = 'N/A';
-      }
-    });
-  }
 }

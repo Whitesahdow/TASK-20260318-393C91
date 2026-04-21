@@ -1,0 +1,43 @@
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.config-card,
+.template-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
+.line,
+.template-item {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+input,
+textarea {
+  border: 1px solid #d6deea;
+  border-radius: 8px;
+  padding: 8px;
+  font: inherit;
+}
+
+textarea {
+  min-height: 70px;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #9a3412;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}

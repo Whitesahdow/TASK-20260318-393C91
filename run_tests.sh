@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo ">>> PHASE 6: FULL PLATFORM VERIFICATION (PHASE 1-6)"
+echo ">>> PROJECT COMPLETENESS AUDIT"
 
 docker compose -f repo/docker-compose.yml up -d --build
 
@@ -17,17 +17,23 @@ until curl --output /dev/null --silent --head --fail http://localhost:8080/api/h
   fi
 done
 
-echo "Running Backend Security Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=AuthIntegrationTest,com.busapp.service.AuthServiceTest"'
+echo "Running Security Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SecurityModuleTest"'
 
-echo "Running Data Cleaning Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DataCleaningTest"'
+echo "Running Data Integration Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DataIntegrationModuleTest"'
 
-echo "Running Intelligent Search Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SearchRankingTest,AutocompleteTest"'
+echo "Running Search Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SearchModuleTest"'
 
-echo "Running Notification Logic Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DNDLogicTest,CheckInTriggerTest"'
+echo "Running Notification Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=NotificationModuleTest"'
+
+echo "Running Workflow Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=WorkflowModuleTest"'
+
+echo "Running Observability Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=ObservabilityModuleTest"'
 
 echo "Verifying Frontend Integration Build..."
 docker exec bus_frontend test -f /usr/share/nginx/html/index.html
@@ -95,9 +101,14 @@ else
 fi
 
 echo "Verifying message masking and queue trace logging..."
-curl -s -X POST -H "Content-Type: application/json" -d '{"stopName":"Central Avenue 3500"}' "http://localhost:8080/api/passenger/messages/reminder?username=admin" > /dev/null
+REGISTER_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"username":"phase6_passenger","password":"phase6pass123","role":"PASSENGER"}' http://localhost:8080/api/auth/register)
+if [ "$REGISTER_CODE" -ne 201 ] && [ "$REGISTER_CODE" -ne 409 ]; then
+  echo "FAILED: Could not ensure passenger test user exists (HTTP $REGISTER_CODE)."
+  exit 1
+fi
+curl -s -X POST -H "Content-Type: application/json" -d '{"stopName":"Central Avenue 3500"}' "http://localhost:8080/api/passenger/messages/reminder?username=phase6_passenger" > /dev/null
 sleep 65
-MASKED_MSG=$(curl -s "http://localhost:8080/api/passenger/messages/latest?username=admin")
+MASKED_MSG=$(curl -s "http://localhost:8080/api/passenger/messages/latest?username=phase6_passenger")
 if [[ $MASKED_MSG == *"****"* ]]; then
   echo "SUCCESS: Sensitive content masked for passenger/admin view policy."
 else
@@ -111,6 +122,24 @@ else
   exit 1
 fi
 
+echo "Checking Local Backup Strategy..."
+sleep 5
+if [ -f "repo/backups/backup_$(date +%Y%m%d).sql" ]; then
+  echo "SUCCESS: Local backup generated."
+else
+  echo "FAILED: Backup not found."
+  exit 1
+fi
+
+echo "Simulating Latency Alert..."
+curl -s "http://localhost:8080/api/admin/maintenance/monitor/simulate-p95" > /dev/null
+if docker logs bus_backend 2>&1 | rg -i "Diagnostic Report Generated" > /dev/null; then
+  echo "SUCCESS: P95 alerting is functional."
+else
+  echo "FAILED: P95 threshold ignored."
+  exit 1
+fi
+
 echo "=========================================="
-echo "PHASE 6 COMPLETE: Notification + message center + prior phases verified"
+echo "PROJECT COMPLETE: ALL AUDIT GATES PASSED"
 echo "=========================================="

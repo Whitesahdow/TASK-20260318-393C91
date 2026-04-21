@@ -101,6 +101,21 @@ public class NotificationService {
         return queueRepository.findTopByUserIdOrderByScheduledAtDesc(user.getId());
     }
 
+    @Transactional
+    public void sendAlertToAdmin(String content) {
+        userRepository.findByUsername("admin").ifPresent(admin -> {
+            MessageTask task = new MessageTask();
+            task.setUserId(admin.getId());
+            task.setTypeLabel("Escalation Alert");
+            task.setRawContent(content);
+            task.setScheduledAt(LocalDateTime.now().minusSeconds(1));
+            task.setStatus(MessageStatus.PENDING);
+            task.setSensitivity(SensitivityLevel.LEVEL1);
+            task.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+            queueRepository.save(task);
+        });
+    }
+
     private NotificationPreference defaultPreference(Long userId) {
         NotificationPreference pref = new NotificationPreference();
         pref.setUserId(userId);

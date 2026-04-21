@@ -2,16 +2,20 @@ package com.busapp;
 
 import com.busapp.repository.SearchRepository;
 import com.busapp.service.ConfigService;
+import com.busapp.service.SearchResultDTO;
 import com.busapp.service.SearchService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-class SearchRankingTest {
+public class SearchModuleTest {
     @Mock
     private SearchRepository searchRepository;
     @Mock
@@ -22,5 +26,12 @@ class SearchRankingTest {
         SearchService rankingService = new SearchService(searchRepository, configService);
         double score = rankingService.calculateScore(10, 50, 0.7, 0.3);
         assertEquals(22.0, score);
+    }
+
+    @Test
+    void whenQueryTooShort_thenReturnEmpty() {
+        SearchService searchService = new SearchService(searchRepository, configService);
+        List<SearchResultDTO> results = searchService.getAutocomplete("a");
+        assertTrue(results.isEmpty(), "Autocomplete should only trigger at 2+ characters.");
     }
 }

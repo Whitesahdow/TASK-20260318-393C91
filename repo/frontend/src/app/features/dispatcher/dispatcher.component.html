@@ -1,35 +1,33 @@
 <section class="dashboard-shell role-dispatcher">
   <header class="dashboard-header">
-    <p class="dashboard-role">Dispatcher Workspace</p>
-    <h1>Operations Queue</h1>
-    <p class="dashboard-subtitle">Monitor approvals, escalations, and flow control in real time.</p>
+    <h1>Task Dashboard</h1>
   </header>
 
   <main class="dashboard-grid stack">
-    <article class="dashboard-card task-card" *ngFor="let item of tasks">
-      <div class="task-head">
-        <h3>{{ item.task }}</h3>
-        <span class="status-pill">{{ item.status }}</span>
-      </div>
-      <p>Owner: {{ item.owner }}</p>
-      <div class="meter"><span [style.width.%]="item.progress"></span></div>
-    </article>
-
     <article class="dashboard-card task-card">
       <div class="task-head">
-        <h3>Abnormal Data Review Queue (Phase 4)</h3>
-        <button type="button" (click)="loadReviewQueue()">Refresh</button>
+        <h3>Workflow Queue</h3>
+        <button type="button" (click)="batchApprove()">Batch Approve Selected</button>
       </div>
-      <p>Review recent imports for missing or suspicious standardized fields.</p>
-      <p *ngIf="loading">Loading review queue...</p>
+      <p *ngIf="loading">Loading tasks...</p>
       <p *ngIf="error" class="error-msg">{{ error }}</p>
       <div class="review-list" *ngIf="!loading && !error">
-        <div class="review-item" *ngFor="let row of reviewQueue">
-          <strong>{{ row.stopName }} (v{{ row.versionNumber }})</strong>
-          <span>Area ㎡: {{ row.areaSqm ?? 'NULL' }}</span>
-          <span>Imported: {{ row.importedAt | date: 'yyyy-MM-dd HH:mm' }}</span>
+        <div class="review-item" *ngFor="let task of tasks">
+          <label class="selector-row">
+            <input
+              type="checkbox"
+              [checked]="selectedTaskIds.includes(task.id)"
+              (change)="toggleSelection(task.id)"
+            />
+            <strong>{{ task.title }}</strong>
+          </label>
+          <div class="progress-bar">
+            <div [style.width.%]="task.progress"></div>
+          </div>
+          <span class="status-pill" [ngClass]="task.branch.toLowerCase()">{{ task.status }} · {{ task.branch }}</span>
+          <button type="button" (click)="returnTask(task.id)">Return</button>
         </div>
-        <p *ngIf="reviewQueue.length === 0">No review items yet.</p>
+        <p *ngIf="tasks.length === 0">No tasks available.</p>
       </div>
     </article>
   </main>

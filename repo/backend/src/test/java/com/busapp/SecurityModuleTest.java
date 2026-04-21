@@ -1,24 +1,40 @@
-package com.busapp.service;
+package com.busapp;
 
 import com.busapp.model.UserEntity;
 import com.busapp.model.UserRole;
 import com.busapp.repository.UserRepository;
+import com.busapp.service.AuthService;
+import com.busapp.service.RegisterRequest;
+import com.busapp.service.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SpringBootTest
+@AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+public class SecurityModuleTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
     @Mock
     private UserRepository userRepository;
 
@@ -27,6 +43,15 @@ class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
+
+    @Test
+    void whenPasswordShort_thenReturns400() throws Exception {
+        String shortPasswordJson = "{\"username\":\"test\", \"password\":\"123\"}";
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(shortPasswordJson))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test
     void register_WithShortPassword_ShouldThrowException() {

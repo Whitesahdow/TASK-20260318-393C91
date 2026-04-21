@@ -1,8 +1,6 @@
 <section class="dashboard-shell role-passenger">
   <header class="dashboard-header">
-    <p class="dashboard-role">Passenger Workspace</p>
     <h1>Bus Route & Stop Search</h1>
-    <p class="dashboard-subtitle">Search by route number, stop name, or pinyin initials.</p>
   </header>
 
   <main class="dashboard-grid single-column">
@@ -31,8 +29,6 @@
           <tr>
             <th>Route</th>
             <th>Stop Name</th>
-            <th>Popularity</th>
-            <th>Score</th>
             <th>Reminder</th>
           </tr>
         </thead>
@@ -40,8 +36,6 @@
           <tr *ngFor="let res of results">
             <td>{{ res.routeNumber }}</td>
             <td>{{ res.stopName }}</td>
-            <td>{{ res.popularity }}</td>
-            <td>{{ res.score | number:'1.1-2' }}</td>
             <td>
               <button type="button" (click)="toggleReminder(res)" class="btn-notify">
                 {{ res.reminderEnabled ? 'Reminder On' : 'Set Reminder' }}
@@ -80,7 +74,7 @@
         <div class="mini-item" *ngFor="let msg of messages">
           <strong>{{ msg.typeLabel }} · {{ msg.status }}</strong>
           <span>{{ msg.finalContent }}</span>
-          <span>{{ msg.scheduledAt | date:'short' }} · Trace ID: {{ msg.traceId }}</span>
+          <span>{{ msg.scheduledAt | date:'short' }}</span>
         </div>
         <p *ngIf="messages.length === 0">No messages yet.</p>
       </div>

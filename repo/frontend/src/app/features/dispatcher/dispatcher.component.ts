@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 
-interface AuditRow {
-  stopName: string;
-  versionNumber: number;
-  areaSqm: number | null;
-  importedAt: string;
+interface WorkflowTask {
+  id: number;
+  title: string;
+  status: string;
+  branch: string;
+  progress: number;
 }
 
 @Component({
@@ -17,34 +18,57 @@ interface AuditRow {
   styleUrls: ['./dispatcher.component.css']
 })
 export class DispatcherComponent implements OnInit {
-  readonly tasks = [
-    { task: 'Approve route B12 schedule update', owner: 'Shift A', status: 'In Review', progress: 64 },
-    { task: 'Resolve stop conflicts in East Market', owner: 'Shift C', status: 'Escalated', progress: 82 },
-    { task: 'Validate evening reminder rules', owner: 'Shift B', status: 'Pending Approval', progress: 48 }
-  ];
-
-  reviewQueue: AuditRow[] = [];
+  tasks: WorkflowTask[] = [];
+  selectedTaskIds: number[] = [];
   loading = false;
   error = '';
 
   constructor(private readonly http: HttpClient) {}
 
   ngOnInit(): void {
-    this.loadReviewQueue();
+    this.loadTasks();
   }
 
-  loadReviewQueue(): void {
+  loadTasks(): void {
     this.loading = true;
     this.error = '';
-    this.http.get<AuditRow[]>('/api/admin/stops/audit').subscribe({
-      next: (logs) => {
-        this.reviewQueue = logs.slice(0, 5);
+    this.http.get<WorkflowTask[]>('/api/dispatcher/workflow/tasks').subscribe({
+      next: (tasks) => {
+        this.tasks = tasks;
         this.loading = false;
       },
       error: () => {
         this.loading = false;
-        this.error = 'Unable to load abnormal data review queue.';
+        this.error = 'Unable to load dispatcher tasks.';
       }
+    });
+  }
+
+  toggleSelection(taskId: number): void {
+    if (this.selectedTaskIds.includes(taskId)) {
+      this.selectedTaskIds = this.selectedTaskIds.filter((id) => id !== taskId);
+    } else {
+      this.selectedTaskIds = [...this.selectedTaskIds, taskId];
+    }
+  }
+
+  returnTask(taskId: number): void {
+    this.http.post(`/api/dispatcher/workflow/tasks/${taskId}/return`, {}).subscribe({
+      next: () => this.loadTasks(),
+      error: () => this.error = 'Failed to return task.'
+    });
+  }
+
+  batchApprove(): void {
+    if (this.selectedTaskIds.length === 0) {
+      return;
+    }
+    this.http.post('/api/dispatcher/workflow/tasks/batch-approve', { taskIds: this.selectedTaskIds }).subscribe({
+      next: () => {
+        this.selectedTaskIds = [];
+        this.loadTasks();
+      },
+      error: () => this.error = 'Batch approval failed.'
     });
   }
 }

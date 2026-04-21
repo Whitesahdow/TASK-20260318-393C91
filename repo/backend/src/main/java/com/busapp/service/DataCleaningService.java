@@ -2,6 +2,7 @@ package com.busapp.service;
 
 import com.busapp.model.StopVersion;
 import com.busapp.model.ImportAuditLog;
+import com.busapp.model.CleaningRule;
 import com.busapp.repository.CleaningRuleRepository;
 import com.busapp.repository.ImportAuditLogRepository;
 import com.busapp.repository.StopVersionRepository;
@@ -63,6 +64,30 @@ public class DataCleaningService {
 
     public List<ImportAuditLog> importAuditHistory() {
         return importAuditLogRepository.findTop50ByOrderByTimestampDesc();
+    }
+
+    public List<ConfigEntryRequest> listRuleConfigs() {
+        List<ConfigEntryRequest> result = new ArrayList<>();
+        for (CleaningRule rule : cleaningRuleRepository.findAll()) {
+            ConfigEntryRequest item = new ConfigEntryRequest();
+            item.setKey(rule.getRuleKey());
+            item.setValue(rule.getRuleValue());
+            item.setEnabled(rule.isEnabled());
+            result.add(item);
+        }
+        return result;
+    }
+
+    @Transactional
+    public List<ConfigEntryRequest> saveRuleConfigs(List<ConfigEntryRequest> entries) {
+        for (ConfigEntryRequest entry : entries) {
+            CleaningRule rule = cleaningRuleRepository.findByRuleKey(entry.getKey()).orElseGet(CleaningRule::new);
+            rule.setRuleKey(entry.getKey());
+            rule.setRuleValue(entry.getValue() == null ? "" : entry.getValue());
+            rule.setEnabled(entry.getEnabled() == null || entry.getEnabled());
+            cleaningRuleRepository.save(rule);
+        }
+        return listRuleConfigs();
     }
 
     public StopVersion cleanAndTransform(RawInput input) {

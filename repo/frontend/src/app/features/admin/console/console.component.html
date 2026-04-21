@@ -1,0 +1,22 @@
+<div class="admin-grid">
+  <section class="config-card">
+    <h4>Search Ranking Weights</h4>
+    <div *ngFor="let w of weights; let i = index" class="line">
+      <label>{{ w.key }}</label>
+      <input type="number" step="0.1" [(ngModel)]="weights[i].value" />
+    </div>
+    <button type="button" (click)="saveWeights()">Update Algorithm</button>
+  </section>
+
+  <section class="template-card">
+    <h4>Notification Templates</h4>
+    <div *ngFor="let t of templates; let i = index" class="template-item">
+      <label>{{ t.templateKey }}</label>
+      <textarea [(ngModel)]="templates[i].templateBody"></textarea>
+    </div>
+    <button type="button" (click)="saveTemplates()">Save Templates</button>
+  </section>
+</div>
+
+<p *ngIf="loading">Loading maintenance console...</p>
+<p *ngIf="message">{{ message }}</p>

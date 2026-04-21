@@ -1,12 +1,12 @@
 $ErrorActionPreference = "Stop"
 
-Write-Host ">>> [1/14] Starting Environment via Docker Compose..."
+Write-Host ">>> [1/17] Starting Environment via Docker Compose..."
 docker compose -f repo/docker-compose.yml up -d --build
 if ($LASTEXITCODE -ne 0) {
     throw "Docker Compose failed during startup/build."
 }
 
-Write-Host ">>> [2/14] Waiting for Backend API..."
+Write-Host ">>> [2/17] Waiting for Backend API..."
 $maxRetries = 60
 $count = 0
 while ($count -lt $maxRetries) {
@@ -28,37 +28,49 @@ if ($count -eq $maxRetries) {
 }
 
 Write-Host " Backend is UP."
-Write-Host ">>> [3/14] Running Backend Security Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=AuthIntegrationTest,com.busapp.service.AuthServiceTest"'
+Write-Host ">>> [3/18] Running Security Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SecurityModuleTest"'
 if ($LASTEXITCODE -ne 0) {
-    throw "Backend security tests failed."
+    throw "Security module tests failed."
 }
 
-Write-Host ">>> [4/14] Running Data Cleaning Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DataCleaningTest"'
+Write-Host ">>> [4/18] Running Data Integration Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DataIntegrationModuleTest"'
 if ($LASTEXITCODE -ne 0) {
-    throw "Data cleaning tests failed."
+    throw "Data integration tests failed."
 }
 
-Write-Host ">>> [5/14] Running Intelligent Search Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SearchRankingTest,AutocompleteTest"'
+Write-Host ">>> [5/18] Running Search Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=SearchModuleTest"'
 if ($LASTEXITCODE -ne 0) {
-    throw "Intelligent search tests failed."
+    throw "Search module tests failed."
 }
 
-Write-Host ">>> [6/14] Running Notification Logic Unit Tests..."
-docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=DNDLogicTest,CheckInTriggerTest"'
+Write-Host ">>> [6/18] Running Notification Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=NotificationModuleTest"'
 if ($LASTEXITCODE -ne 0) {
-    throw "Notification tests failed."
+    throw "Notification module tests failed."
 }
 
-Write-Host ">>> [7/14] Verifying Frontend Integration Build..."
+Write-Host ">>> [7/18] Running Workflow Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=WorkflowModuleTest"'
+if ($LASTEXITCODE -ne 0) {
+    throw "Workflow module tests failed."
+}
+
+Write-Host ">>> [8/18] Running Observability Module Tests..."
+docker exec -e HOME=/root -e MAVEN_CONFIG=/root/.m2 -w /app bus_backend sh -lc 'mvn -o test "-Dtest=ObservabilityModuleTest"'
+if ($LASTEXITCODE -ne 0) {
+    throw "Observability module tests failed."
+}
+
+Write-Host ">>> [9/18] Verifying Frontend Integration Build..."
 docker exec bus_frontend test -f /usr/share/nginx/html/index.html
 if ($LASTEXITCODE -ne 0) {
     throw "Frontend integration artifact missing."
 }
 
-Write-Host ">>> [8/14] Verifying Trace ID in Headers..."
+Write-Host ">>> [10/18] Verifying Trace ID in Headers..."
 $headersResp = Invoke-WebRequest -Uri "http://localhost:8080/api/health" -Method Head -UseBasicParsing
 $traceId = $headersResp.Headers["X-Trace-ID"]
 
@@ -67,7 +79,7 @@ if ([string]::IsNullOrWhiteSpace($traceId)) {
 }
 Write-Host "SUCCESS: Trace ID found: X-Trace-ID=$traceId"
 
-Write-Host ">>> [9/14] Verifying Default Admin Seeding and BCrypt Hashing..."
+Write-Host ">>> [11/18] Verifying Default Admin Seeding and BCrypt Hashing..."
 $adminRow = docker exec bus_db psql -U bus_admin -d city_bus_platform -t -A -c "SELECT username || ':' || role || ':' || password_hash FROM users WHERE username='admin' LIMIT 1;"
 if ($adminRow -match '^admin:ADMIN:\$2') {
     Write-Host "SUCCESS: Default admin seeded with BCrypt hash."
@@ -75,7 +87,7 @@ if ($adminRow -match '^admin:ADMIN:\$2') {
     throw "FAILED: Default admin record missing or password hash is not BCrypt."
 }
 
-Write-Host ">>> [10/14] Verifying Registration Boundary..."
+Write-Host ">>> [12/18] Verifying Registration Boundary..."
 $registerCode = curl.exe -s -o NUL -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{"username":"fail_user","password":"123","role":"PASSENGER"}' http://localhost:8080/api/auth/register
 if ($registerCode -eq "400") {
     Write-Host "SUCCESS: Server rejected weak password (8-char rule active)."
@@ -83,7 +95,7 @@ if ($registerCode -eq "400") {
     throw "FAILED: Server accepted weak password or returned unexpected status."
 }
 
-Write-Host ">>> [11/14] Triggering stop imports and verifying versioning..."
+Write-Host ">>> [13/18] Triggering stop imports and verifying versioning..."
 $beforeCount = docker exec bus_db psql -U bus_admin -d city_bus_platform -t -A -c "SELECT count(*) FROM stop_version WHERE stop_name='Audit Stop';"
 $beforeLatest = docker exec bus_db psql -U bus_admin -d city_bus_platform -t -A -c "SELECT COALESCE(MAX(version_number), 0) FROM stop_version WHERE stop_name='Audit Stop';"
 $beforeCount = $beforeCount.Trim()
@@ -122,14 +134,14 @@ if ([int]$versionCount -lt ([int]$beforeCount + 2) -or [int]$latestVersion -ne (
 }
 Write-Host "SUCCESS: Stop versioning increments across imports."
 
-Write-Host ">>> [12/14] Verifying audit log persistence..."
+Write-Host ">>> [14/18] Verifying audit log persistence..."
 $logHit = docker logs bus_backend 2>&1 | Select-String -Pattern "\[Audit\] Missing area"
 if (-not $logHit) {
     throw "FAILED: Audit logging not detected in backend logs."
 }
 Write-Host "SUCCESS: Missing values are being logged to audit trail."
 
-Write-Host ">>> [13/14] Verifying search API initials matching and deduplication..."
+Write-Host ">>> [15/18] Verifying search API initials matching and deduplication..."
 $searchResultRaw = Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/search?query=CA" -Method Get
 $searchResultJson = $searchResultRaw | ConvertTo-Json -Depth 10
 if ($searchResultJson -notmatch "Central Avenue") {
@@ -141,10 +153,23 @@ if ($uniqueStops.Count -ne 1) {
 }
 Write-Host "SUCCESS: Pinyin/initial matching and deduplication verified."
 
-Write-Host ">>> [14/14] Verifying message masking and queue trace logs..."
-Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/reminder?username=admin" -Method Post -ContentType "application/json" -Body '{"stopName":"Central Avenue 3500"}' | Out-Null
+Write-Host ">>> [16/18] Verifying message masking and queue trace logs..."
+$phase6User = "phase6_passenger"
+try {
+    Invoke-RestMethod -Uri "http://localhost:8080/api/auth/register" -Method Post -ContentType "application/json" -Body (@{
+        username = "phase6_passenger"
+        password = "phase6pass123"
+        role = "PASSENGER"
+    } | ConvertTo-Json) | Out-Null
+} catch {
+    $statusCode = $_.Exception.Response.StatusCode.value__
+    if ($statusCode -ne 409) {
+        throw "FAILED: Could not ensure passenger test user exists (HTTP $statusCode)."
+    }
+}
+Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/reminder?username=$phase6User" -Method Post -ContentType "application/json" -Body '{"stopName":"Central Avenue 3500"}' | Out-Null
 Start-Sleep -Seconds 65
-$maskedMsg = Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/latest?username=admin" -Method Get
+$maskedMsg = Invoke-RestMethod -Uri "http://localhost:8080/api/passenger/messages/latest?username=$phase6User" -Method Get
 if (($maskedMsg.finalContent | Out-String) -notmatch "\*\*\*\*") {
     throw "FAILED: Sensitive content not masked in latest message."
 }
@@ -154,6 +179,22 @@ if (-not $queueLog) {
 }
 Write-Host "SUCCESS: Message masking and queue trace logging verified."
 
+Write-Host ">>> [17/18] Verifying backup file creation..."
+Start-Sleep -Seconds 5
+$backupFile = "repo/backups/backup_$(Get-Date -Format yyyyMMdd).sql"
+if (-not (Test-Path $backupFile)) {
+    throw "FAILED: Backup file not generated at $backupFile"
+}
+Write-Host "SUCCESS: Local backup generated."
+
+Write-Host ">>> [18/18] Simulating P95 alert diagnostic..."
+Invoke-RestMethod -Uri "http://localhost:8080/api/admin/maintenance/monitor/simulate-p95" -Method Get | Out-Null
+$diagLog = docker logs bus_backend 2>&1 | Select-String -Pattern "Diagnostic Report Generated"
+if (-not $diagLog) {
+    throw "FAILED: P95 diagnostic report log not found."
+}
+Write-Host "SUCCESS: P95 diagnostic alert functional."
+
 Write-Host "=========================================="
-Write-Host "PHASE 6 COMPLETE: Notification + message center + prior phases verified"
+Write-Host "PROJECT COMPLETE: ALL AUDIT GATES PASSED"
 Write-Host "=========================================="

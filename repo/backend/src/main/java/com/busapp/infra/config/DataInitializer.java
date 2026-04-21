@@ -5,9 +5,15 @@ import com.busapp.model.UserRole;
 import com.busapp.model.BusRoute;
 import com.busapp.model.BusStop;
 import com.busapp.model.RouteStopMapping;
+import com.busapp.model.NotificationTemplate;
+import com.busapp.model.TaskStatus;
+import com.busapp.model.TaskType;
+import com.busapp.model.WorkflowTask;
 import com.busapp.repository.BusRouteRepository;
 import com.busapp.repository.BusStopRepository;
+import com.busapp.repository.NotificationTemplateRepository;
 import com.busapp.repository.RouteStopMappingRepository;
+import com.busapp.repository.WorkflowTaskRepository;
 import com.busapp.repository.UserRepository;
 import com.busapp.service.AdminConfigService;
 import org.slf4j.Logger;
@@ -26,6 +32,8 @@ public class DataInitializer implements CommandLineRunner {
     private final BusStopRepository busStopRepository;
     private final BusRouteRepository busRouteRepository;
     private final RouteStopMappingRepository routeStopMappingRepository;
+    private final WorkflowTaskRepository workflowTaskRepository;
+    private final NotificationTemplateRepository notificationTemplateRepository;
 
     public DataInitializer(
             UserRepository userRepository,
@@ -34,6 +42,8 @@ public class DataInitializer implements CommandLineRunner {
             BusStopRepository busStopRepository,
             BusRouteRepository busRouteRepository,
             RouteStopMappingRepository routeStopMappingRepository
+            , WorkflowTaskRepository workflowTaskRepository
+            , NotificationTemplateRepository notificationTemplateRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,6 +51,8 @@ public class DataInitializer implements CommandLineRunner {
         this.busStopRepository = busStopRepository;
         this.busRouteRepository = busRouteRepository;
         this.routeStopMappingRepository = routeStopMappingRepository;
+        this.workflowTaskRepository = workflowTaskRepository;
+        this.notificationTemplateRepository = notificationTemplateRepository;
     }
 
     @Override
@@ -55,6 +67,8 @@ public class DataInitializer implements CommandLineRunner {
             log.info("[Trace: INIT] Default admin created: admin/admin1234");
         }
         seedSearchData();
+        seedWorkflowData();
+        seedNotificationTemplates();
     }
 
     private void seedSearchData() {
@@ -91,6 +105,50 @@ public class DataInitializer implements CommandLineRunner {
             map.setRoute(k66);
             map.setStop(central);
             routeStopMappingRepository.save(map);
+        }
+    }
+
+    private void seedWorkflowData() {
+        if (workflowTaskRepository.count() > 0) {
+            return;
+        }
+        WorkflowTask a = new WorkflowTask();
+        a.setTitle("Route data change approval - Central Avenue");
+        a.setType(TaskType.ROUTE_CHANGE);
+        a.setStatus(TaskStatus.PENDING);
+        a.setHighImpact(true);
+        a.setProgress(55);
+        workflowTaskRepository.save(a);
+
+        WorkflowTask b = new WorkflowTask();
+        b.setTitle("Reminder rule configuration review");
+        b.setType(TaskType.REMINDER_RULE);
+        b.setStatus(TaskStatus.PENDING);
+        b.setHighImpact(false);
+        b.setProgress(35);
+        workflowTaskRepository.save(b);
+
+        WorkflowTask c = new WorkflowTask();
+        c.setTitle("Abnormal data batch review");
+        c.setType(TaskType.ABNORMAL_DATA_REVIEW);
+        c.setStatus(TaskStatus.PENDING);
+        c.setHighImpact(false);
+        c.setProgress(20);
+        workflowTaskRepository.save(c);
+    }
+
+    private void seedNotificationTemplates() {
+        if (notificationTemplateRepository.findByTemplateKey("ARRIVAL_REMINDER").isEmpty()) {
+            NotificationTemplate t = new NotificationTemplate();
+            t.setTemplateKey("ARRIVAL_REMINDER");
+            t.setTemplateBody("Reminder: Your bus to {stopName} arrives in {leadTimeMinutes} minutes.");
+            notificationTemplateRepository.save(t);
+        }
+        if (notificationTemplateRepository.findByTemplateKey("MISSED_CHECKIN").isEmpty()) {
+            NotificationTemplate t = new NotificationTemplate();
+            t.setTemplateKey("MISSED_CHECKIN");
+            t.setTemplateBody("Missed check-in detected for {stopName}.");
+            notificationTemplateRepository.save(t);
         }
     }
 }

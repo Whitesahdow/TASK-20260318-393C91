@@ -35,5 +35,21 @@ services:
     depends_on:
       - backend
 
+  db_backup:
+    image: postgres:15-alpine
+    container_name: bus_backup_worker
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: salted_password_123
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c "while true; do
+      pg_dump -h db -U bus_admin city_bus_platform > /backups/backup_$$(date +%Y%m%d).sql;
+      sleep 86400;
+      done"
+
 volumes:
   postgres_data:
