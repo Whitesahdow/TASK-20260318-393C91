@@ -127,6 +127,11 @@ button {
   margin-top: 0;
 }
 
+.panel app-login {
+  display: block;
+  margin-top: 12px;
+}
+
 .search-row {
   display: flex;
   gap: 8px;

@@ -1,0 +1,9 @@
+<div class="login-container">
+  <h2>City Bus Operation Platform</h2>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <input formControlName="username" placeholder="Username" type="text" />
+    <input formControlName="password" placeholder="Password (Min 8 chars)" type="password" />
+    <button type="submit" [disabled]="loginForm.invalid">Login</button>
+    <p *ngIf="error" class="error-msg">{{ error }}</p>
+  </form>
+</div>

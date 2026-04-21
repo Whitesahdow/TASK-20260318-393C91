@@ -1,0 +1,14 @@
+.login-container {
+  display: grid;
+  gap: 12px;
+}
+
+.login-container form {
+  display: grid;
+  gap: 10px;
+}
+
+.error-msg {
+  color: #8f4a2f;
+  margin: 0;
+}

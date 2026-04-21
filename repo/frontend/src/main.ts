@@ -2,7 +2,9 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse, provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { LoginComponent } from './app/features/auth/login.component';
+import { TraceInterceptor } from './app/core/interceptors/trace.interceptor';
 
 interface StopRecord {
   route: string;
@@ -21,7 +23,7 @@ interface MessageItem {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoginComponent],
   templateUrl: './app/app.component.html',
   styleUrls: ['./app/app.component.css']
 })
@@ -122,7 +124,7 @@ class AppComponent implements OnInit {
 
   refreshBackendStatus(): void {
     this.http.get<{ status: string; service: string }>('/api/health', { observe: 'response' }).subscribe({
-      next: (response) => {
+      next: (response: HttpResponse<{ status: string; service: string }>) => {
         this.backendStatus = response.body?.status ?? 'UNKNOWN';
         this.backendService = response.body?.service ?? 'Unknown service';
         this.traceId = response.headers.get('X-Trace-ID') ?? 'N/A';
@@ -137,5 +139,8 @@ class AppComponent implements OnInit {
 }
 
 bootstrapApplication(AppComponent, {
-  providers: [provideHttpClient()]
-}).catch((err) => console.error(err));
+  providers: [
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: TraceInterceptor, multi: true }
+  ]
+}).catch((err: unknown) => console.error(err));

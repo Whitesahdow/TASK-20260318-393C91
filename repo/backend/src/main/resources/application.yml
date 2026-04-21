@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: city-bus-backend
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/city_bus_platform}
     username: ${SPRING_DATASOURCE_USERNAME:bus_admin}
