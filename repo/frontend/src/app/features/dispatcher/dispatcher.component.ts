@@ -32,7 +32,7 @@ export class DispatcherComponent implements OnInit {
   loadTasks(): void {
     this.loading = true;
     this.error = '';
-    this.http.get<WorkflowTask[]>('/api/dispatcher/workflow/tasks').subscribe({
+    this.http.get<WorkflowTask[]>('/api/v1/dispatch/tasks').subscribe({
       next: (tasks) => {
         this.tasks = tasks;
         this.loading = false;
@@ -53,7 +53,7 @@ export class DispatcherComponent implements OnInit {
   }
 
   returnTask(taskId: number): void {
-    this.http.post(`/api/dispatcher/workflow/tasks/${taskId}/return`, {}).subscribe({
+    this.http.post(`/api/v1/dispatch/tasks/${taskId}/return`, {}).subscribe({
       next: () => this.loadTasks(),
       error: () => this.error = 'Failed to return task.'
     });
@@ -63,7 +63,7 @@ export class DispatcherComponent implements OnInit {
     if (this.selectedTaskIds.length === 0) {
       return;
     }
-    this.http.post('/api/dispatcher/workflow/tasks/batch-approve', { taskIds: this.selectedTaskIds }).subscribe({
+    this.http.post('/api/v1/dispatch/tasks/batch-approve', { taskIds: this.selectedTaskIds }).subscribe({
       next: () => {
         this.selectedTaskIds = [];
         this.loadTasks();

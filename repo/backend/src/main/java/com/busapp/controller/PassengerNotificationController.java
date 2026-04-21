@@ -7,16 +7,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/passenger")
+@RequestMapping("/api/v1/notifications")
 public class PassengerNotificationController {
     private final NotificationService notificationService;
 
@@ -24,44 +24,46 @@ public class PassengerNotificationController {
         this.notificationService = notificationService;
     }
 
+    private String getUsername() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
     @GetMapping("/preferences")
-    public ResponseEntity<NotificationPreference> getPreferences(@RequestParam String username) {
-        return ResponseEntity.ok(notificationService.getPreferenceByUsername(username));
+    public ResponseEntity<NotificationPreference> getPreferences() {
+        return ResponseEntity.ok(notificationService.getPreferenceByUsername(getUsername()));
     }
 
     @PutMapping("/preferences")
     public ResponseEntity<NotificationPreference> savePreferences(
-            @RequestParam String username,
             @RequestBody NotificationPreference preference
     ) {
-        return ResponseEntity.ok(notificationService.savePreference(username, preference));
+        return ResponseEntity.ok(notificationService.savePreference(getUsername(), preference));
     }
 
-    @GetMapping("/messages")
-    public ResponseEntity<List<MessageTask>> messages(@RequestParam String username) {
-        return ResponseEntity.ok(notificationService.listMessages(username));
+    @GetMapping("")
+    public ResponseEntity<List<MessageTask>> messages() {
+        return ResponseEntity.ok(notificationService.listMessages(getUsername()));
     }
 
-    @GetMapping("/messages/latest")
-    public ResponseEntity<MessageTask> latestMessage(@RequestParam String username) {
-        return ResponseEntity.ok(notificationService.latestMessage(username));
+    @GetMapping("/latest")
+    public ResponseEntity<MessageTask> latestMessage() {
+        return ResponseEntity.ok(notificationService.latestMessage(getUsername()));
     }
 
-    @PostMapping("/messages/reminder")
-    public ResponseEntity<MessageTask> enqueueReminder(
-            @RequestParam String username,
+    @PostMapping("/reservations")
+    public ResponseEntity<MessageTask> enqueueReservation(
             @RequestBody Map<String, String> body
     ) {
         String stopName = body.getOrDefault("stopName", "Unknown Stop");
-        return ResponseEntity.ok(notificationService.enqueueReminder(username, stopName));
+        return ResponseEntity.ok(notificationService.enqueueReservation(getUsername(), stopName));
     }
 
-    @PostMapping("/messages/missed-checkin")
+    @PostMapping("/missed-checkin")
     public ResponseEntity<MessageTask> enqueueMissedCheckIn(
-            @RequestParam String username,
             @RequestBody Map<String, String> body
     ) {
         LocalDateTime startTime = LocalDateTime.parse(body.get("busStartTime"));
-        return ResponseEntity.ok(notificationService.enqueueMissedCheckIn(username, startTime));
+        return ResponseEntity.ok(notificationService.enqueueMissedCheckIn(getUsername(), startTime));
     }
 }
+

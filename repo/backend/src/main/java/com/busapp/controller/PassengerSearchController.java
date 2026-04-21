@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
-@RequestMapping("/api/passenger")
+@RequestMapping("/api/v1")
 public class PassengerSearchController {
     private final SearchService searchService;
 
@@ -18,8 +19,19 @@ public class PassengerSearchController {
         this.searchService = searchService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<SearchResultDTO>> search(@RequestParam("query") String query) {
+    @GetMapping("/search/autocomplete")
+    public ResponseEntity<List<SearchResultDTO>> autocomplete(@RequestParam("query") String query) {
         return ResponseEntity.ok(searchService.getAutocomplete(query));
     }
+
+    @GetMapping("/search/results")
+    public ResponseEntity<List<SearchResultDTO>> results(@RequestParam("query") String query) {
+        return ResponseEntity.ok(searchService.getResults(query));
+    }
+
+    @GetMapping("/stops/{stopId}/metadata")
+    public ResponseEntity<com.busapp.model.BusStop> getStopMetadata(@PathVariable Long stopId) {
+        return ResponseEntity.ok(searchService.getMetadata(stopId));
+    }
 }
+

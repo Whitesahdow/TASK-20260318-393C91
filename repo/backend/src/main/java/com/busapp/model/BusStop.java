@@ -23,6 +23,15 @@ public class BusStop {
     @Column(nullable = false)
     private Double popularityScore;
 
+    @Column
+    private String pinyinFull;
+
+    @Column
+    private String keyword;
+
+    @Column
+    private String housingData;
+
     public Long getId() {
         return id;
     }
@@ -54,4 +63,29 @@ public class BusStop {
     public void setPopularityScore(Double popularityScore) {
         this.popularityScore = popularityScore;
     }
+
+    public String getPinyinFull() {
+        return pinyinFull;
+    }
+
+    public void setPinyinFull(String pinyinFull) {
+        this.pinyinFull = pinyinFull;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
+    }
+
+    public String getHousingData() {
+        return housingData;
+    }
+
+    public void setHousingData(String housingData) {
+        this.housingData = housingData;
+    }
 }
+

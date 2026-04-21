@@ -37,6 +37,6 @@ public class WorkflowModuleTest {
 
         WorkflowTask processed = workflowService.processApproval(1L, ApprovalAction.RETURN);
         assertEquals("RISKY", processed.getBranch());
-        assertEquals(TaskStatus.RETURNED, processed.getStatus());
+        assertEquals(TaskStatus.PENDING, processed.getStatus());
     }
 }

@@ -40,6 +40,12 @@ public class WorkflowTask {
     private String comment;
 
     @Column(nullable = false)
+    private boolean approvedByDispatcher = false;
+
+    @Column(nullable = false)
+    private boolean approvedByAdmin = false;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Long getId() { return id; }
@@ -58,6 +64,11 @@ public class WorkflowTask {
     public void setProgress(int progress) { this.progress = progress; }
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+    public boolean isApprovedByDispatcher() { return approvedByDispatcher; }
+    public void setApprovedByDispatcher(boolean approvedByDispatcher) { this.approvedByDispatcher = approvedByDispatcher; }
+    public boolean isApprovedByAdmin() { return approvedByAdmin; }
+    public void setApprovedByAdmin(boolean approvedByAdmin) { this.approvedByAdmin = approvedByAdmin; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
+

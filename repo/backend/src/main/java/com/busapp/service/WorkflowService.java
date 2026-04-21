@@ -34,14 +34,37 @@ public class WorkflowService {
         }
 
         if (action == ApprovalAction.RETURN) {
-            task.setStatus(TaskStatus.RETURNED);
-            task.setComment("Returned for resubmission");
+            task.setStatus(TaskStatus.PENDING); // Resubmission flow instead of RETURNED
+            task.setComment("Returned to pending for resubmission");
             task.setProgress(Math.max(10, task.getProgress() - 20));
+            task.setApprovedByAdmin(false);
+            task.setApprovedByDispatcher(false);
+            return taskRepository.save(task);
+        }
+
+        String role = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString();
+        
+        if ("RISKY".equals(task.getBranch())) {
+            if (role.contains("ROLE_ADMIN")) {
+                task.setApprovedByAdmin(true);
+            } else if (role.contains("ROLE_DISPATCHER")) {
+                task.setApprovedByDispatcher(true);
+            }
+
+            if (task.isApprovedByAdmin() && task.isApprovedByDispatcher()) {
+                task.setStatus(TaskStatus.APPROVED);
+                task.setComment("Jointly Approved");
+                task.setProgress(100);
+            } else {
+                task.setComment("Pending parallel approval");
+                task.setProgress(70);
+            }
         } else {
             task.setStatus(TaskStatus.APPROVED);
             task.setComment("Approved");
             task.setProgress(100);
         }
+
         return taskRepository.save(task);
     }
 
@@ -49,6 +72,11 @@ public class WorkflowService {
     public List<WorkflowTask> batchApprove(List<Long> taskIds) {
         List<WorkflowTask> result = new ArrayList<>();
         for (Long taskId : taskIds) {
+            WorkflowTask task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new ValidationException("Task not found: " + taskId));
+            if (task.getType() == TaskType.ROUTE_CHANGE && task.isHighImpact()) {
+                throw new ValidationException("Cannot batch approve RISKY tasks.");
+            }
             result.add(processApproval(taskId, ApprovalAction.APPROVE));
         }
         return result;

@@ -46,6 +46,22 @@ public class SearchService {
         return result;
     }
 
+    public List<SearchResultDTO> getResults(String query) {
+        List<SearchResultDTO> results = getAutocomplete(query);
+        results.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
+        return results;
+    }
+
+    public com.busapp.model.BusStop getMetadata(Long stopId) {
+        com.busapp.model.BusStop stop = searchRepository.findById(stopId)
+                .orElseThrow(() -> new ValidationException("Stop not found: " + stopId));
+        // Desensitize housing data
+        if (stop.getHousingData() != null) {
+            stop.setHousingData(MaskingUtils.mask(stop.getHousingData(), com.busapp.model.SensitivityLevel.LEVEL2));
+        }
+        return stop;
+    }
+
     public double calculateScore(double frequency, double popularity, double fWeight, double pWeight) {
         return (frequency * fWeight) + (popularity * pWeight);
     }

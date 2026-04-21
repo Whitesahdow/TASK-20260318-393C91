@@ -41,6 +41,9 @@ public class SecurityModuleTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private org.springframework.security.authentication.AuthenticationManager authenticationManager;
+
     @InjectMocks
     private AuthService authService;
 

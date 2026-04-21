@@ -3,6 +3,10 @@ package com.busapp.service;
 import com.busapp.model.UserEntity;
 import com.busapp.model.UserRole;
 import com.busapp.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
+    private final AuthenticationManager authenticationManager;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder encoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder encoder, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.encoder = encoder;
+        this.authenticationManager = authenticationManager;
     }
 
     @Transactional
@@ -39,12 +45,13 @@ public class AuthService {
             throw new SecurityException("Password complexity requirement not met (Min 8 chars).");
         }
 
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new SecurityException("Invalid credentials"));
-
-        if (!encoder.matches(password, user.getPasswordHash())) {
-            throw new SecurityException("Invalid credentials");
-        }
 
         return new UserResponse(user.getUsername(), user.getRole());
     }

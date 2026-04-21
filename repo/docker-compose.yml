@@ -3,13 +3,13 @@ services:
     image: postgres:15-alpine
     container_name: bus_db
     environment:
-      POSTGRES_USER: bus_admin
-      POSTGRES_PASSWORD: salted_password_123
-      POSTGRES_DB: city_bus_platform
+      POSTGRES_USER: ${POSTGRES_USER:-bus_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-city_bus_platform}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bus_admin -d city_bus_platform"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bus_admin} -d ${POSTGRES_DB:-city_bus_platform}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,9 +23,10 @@ services:
       db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/city_bus_platform
-      SPRING_DATASOURCE_USERNAME: bus_admin
-      SPRING_DATASOURCE_PASSWORD: salted_password_123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-city_bus_platform}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bus_admin}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD}
 
   frontend:
     build: ./frontend
@@ -42,7 +43,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      PGPASSWORD: salted_password_123
+      PGPASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./backups:/backups
     entrypoint: >

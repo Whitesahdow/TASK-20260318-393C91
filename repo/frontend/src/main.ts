@@ -1,9 +1,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS, withInterceptors } from '@angular/common/http';
 import { Router, RouterOutlet, provideRouter } from '@angular/router';
 import { TraceInterceptor } from './app/core/interceptors/trace.interceptor';
+import { withCredentialsInterceptor } from './app/core/interceptors/credentials.interceptor';
 import { appRoutes } from './app/app.routes';
 import { AuthService } from './app/core/services/auth.service';
 
@@ -30,7 +31,8 @@ class AppComponent {
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(appRoutes),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptors([withCredentialsInterceptor]), withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: TraceInterceptor, multi: true }
   ]
 }).catch((err: unknown) => console.error(err));
+

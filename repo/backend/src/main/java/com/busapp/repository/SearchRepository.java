@@ -22,6 +22,8 @@ public interface SearchRepository extends JpaRepository<BusStop, Long> {
         JOIN bus_routes r ON m.route_id = r.id
         WHERE (LOWER(s.name_en) LIKE LOWER(CONCAT('%', :query, '%'))
            OR LOWER(s.pinyin_initials) LIKE LOWER(CONCAT('%', :query, '%'))
+           OR LOWER(s.pinyin_full) LIKE LOWER(CONCAT('%', :query, '%'))
+           OR LOWER(s.keyword) LIKE LOWER(CONCAT('%', :query, '%'))
            OR LOWER(r.route_number) LIKE LOWER(CONCAT('%', :query, '%')))
         ORDER BY score DESC
         """, nativeQuery = true)

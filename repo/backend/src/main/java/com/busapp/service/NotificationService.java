@@ -49,22 +49,33 @@ public class NotificationService {
     }
 
     @Transactional
-    public MessageTask enqueueReminder(String username, String stopName) {
+    public MessageTask enqueueReservation(String username, String stopName) {
         UserEntity user = findUser(username);
         NotificationPreference pref = preferenceRepository.findById(user.getId()).orElseGet(() -> defaultPreference(user.getId()));
-        if (!pref.isArrivalRemindersEnabled()) {
-            throw new ValidationException("Arrival reminders are disabled for this user.");
+
+        MessageTask reservation = new MessageTask();
+        reservation.setUserId(user.getId());
+        reservation.setTypeLabel("Reservation Success");
+        reservation.setRawContent("Successfully reserved bus at " + stopName + ". Reminder enabled.");
+        reservation.setScheduledAt(LocalDateTime.now().minusSeconds(1));
+        reservation.setStatus(MessageStatus.PENDING);
+        reservation.setSensitivity(sensitivityForRole(user.getRole()));
+        reservation.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+        MessageTask savedReservation = queueRepository.save(reservation);
+
+        if (pref.isArrivalRemindersEnabled()) {
+            MessageTask reminder = new MessageTask();
+            reminder.setUserId(user.getId());
+            reminder.setTypeLabel("Arrival Reminder");
+            reminder.setRawContent("Reminder: Your bus to " + stopName + " arrives in " + pref.getLeadTimeMinutes() + " minutes.");
+            reminder.setScheduledAt(LocalDateTime.now().minusSeconds(1));
+            reminder.setStatus(MessageStatus.PENDING);
+            reminder.setSensitivity(sensitivityForRole(user.getRole()));
+            reminder.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+            queueRepository.save(reminder);
         }
 
-        MessageTask reminder = new MessageTask();
-        reminder.setUserId(user.getId());
-        reminder.setTypeLabel("Arrival Reminder");
-        reminder.setRawContent("Reminder: Your bus to " + stopName + " arrives in " + pref.getLeadTimeMinutes() + " minutes.");
-        reminder.setScheduledAt(LocalDateTime.now().minusSeconds(1));
-        reminder.setStatus(MessageStatus.PENDING);
-        reminder.setSensitivity(sensitivityForRole(user.getRole()));
-        reminder.setTraceId(UUID.randomUUID().toString().substring(0, 8));
-        return queueRepository.save(reminder);
+        return savedReservation;
     }
 
     @Transactional

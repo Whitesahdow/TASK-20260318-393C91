@@ -31,6 +31,11 @@ public class NotificationScheduler {
     public void processQueue() {
         LocalDateTime now = LocalDateTime.now();
         List<MessageTask> tasks = queueRepository.findByStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(MessageStatus.PENDING, now);
+        
+        if (tasks.size() > 100) {
+            log.warn("Diagnostic Alert: Message queue backlog exceeded threshold. Current depth: {}", tasks.size());
+        }
+        
         log.info("Processing Queue with traceId=batch size={}", tasks.size());
 
         for (MessageTask task : tasks) {
@@ -63,3 +68,4 @@ public class NotificationScheduler {
         return now.equals(pref.getDndStart()) || (now.isAfter(pref.getDndStart()) && now.isBefore(pref.getDndEnd()));
     }
 }
+

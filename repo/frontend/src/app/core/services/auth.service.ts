@@ -15,7 +15,7 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<AuthUser> {
-    return this.http.post<AuthUser>('/api/auth/login', credentials).pipe(
+    return this.http.post<AuthUser>('/api/v1/auth/login', credentials).pipe(
       tap((user: AuthUser) => {
         this.persistUser(user);
       })
@@ -23,7 +23,7 @@ export class AuthService {
   }
 
   register(credentials: RegisterRequest): Observable<AuthUser> {
-    return this.http.post<AuthUser>('/api/auth/register', credentials).pipe(
+    return this.http.post<AuthUser>('/api/v1/auth/register', credentials).pipe(
       tap((user: AuthUser) => {
         this.persistUser(user);
       })

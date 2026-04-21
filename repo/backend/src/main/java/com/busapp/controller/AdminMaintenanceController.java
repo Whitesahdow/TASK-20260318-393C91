@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/maintenance")
+@RequestMapping("/api/v1/admin/maintenance")
 public class AdminMaintenanceController {
     private final DataCleaningService dataCleaningService;
     private final NotificationTemplateRepository templateRepository;

@@ -80,7 +80,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
           this.loading = true;
           this.error = '';
           this.noResults = false;
-          return this.http.get<SearchResult[]>(`/api/passenger/search?query=${encodeURIComponent(query.trim())}`);
+          return this.http.get<SearchResult[]>(`/api/v1/search/autocomplete?query=${encodeURIComponent(query.trim())}`);
         }),
         takeUntil(this.destroy$)
       )
@@ -118,7 +118,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
       return;
     }
     this.http.post(
-      `/api/passenger/messages/reminder?username=${encodeURIComponent(this.currentUsername)}`,
+      `/api/v1/notifications/reservations`,
       { stopName: result.stopName }
     ).subscribe({
       next: () => {
@@ -138,7 +138,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
     }
     this.preferencesSaving = true;
     this.http.put<NotificationPreference>(
-      `/api/passenger/preferences?username=${encodeURIComponent(this.currentUsername)}`,
+      `/api/v1/notifications/preferences`,
       this.prefs
     ).subscribe({
       next: (saved) => {
@@ -162,7 +162,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
     }
     this.messagesLoading = true;
     this.http.get<MessageTask[]>(
-      `/api/passenger/messages?username=${encodeURIComponent(this.currentUsername)}`
+      `/api/v1/notifications`
     ).subscribe({
       next: (data) => {
         this.messages = data;
@@ -176,7 +176,7 @@ export class PassengerComponent implements OnInit, OnDestroy {
 
   private loadPreferences(): void {
     this.http.get<NotificationPreference>(
-      `/api/passenger/preferences?username=${encodeURIComponent(this.currentUsername)}`
+      `/api/v1/notifications/preferences`
     ).subscribe({
       next: (pref) => {
         this.prefs = {

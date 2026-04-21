@@ -55,16 +55,23 @@ public class DataInitializer implements CommandLineRunner {
         this.notificationTemplateRepository = notificationTemplateRepository;
     }
 
+    @org.springframework.beans.factory.annotation.Value("${admin.initial.password:}")
+    private String adminInitialPassword;
+
     @Override
     public void run(String... args) {
         adminConfigService.ensureDefaults();
         if (userRepository.findByUsername("admin").isEmpty()) {
-            UserEntity admin = new UserEntity();
-            admin.setUsername("admin");
-            admin.setPasswordHash(passwordEncoder.encode("admin1234"));
-            admin.setRole(UserRole.ADMIN);
-            userRepository.save(admin);
-            log.info("[Trace: INIT] Default admin created: admin/admin1234");
+            if (adminInitialPassword == null || adminInitialPassword.isBlank()) {
+                log.warn("[Trace: INIT] Admin user not created. ADMIN_INITIAL_PASSWORD is not set.");
+            } else {
+                UserEntity admin = new UserEntity();
+                admin.setUsername("admin");
+                admin.setPasswordHash(passwordEncoder.encode(adminInitialPassword));
+                admin.setRole(UserRole.ADMIN);
+                userRepository.save(admin);
+                log.info("[Trace: INIT] Default admin created successfully.");
+            }
         }
         seedSearchData();
         seedWorkflowData();

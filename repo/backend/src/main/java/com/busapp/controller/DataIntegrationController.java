@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
-@RequestMapping("/api/admin/stops")
+@RequestMapping("/api/v1/admin/stops")
 public class DataIntegrationController {
     private final DataCleaningService dataCleaningService;
     private final TemplateProcessorService templateProcessorService;
