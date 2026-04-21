@@ -1,0 +1,16 @@
+<section class="dashboard-shell role-admin">
+  <header class="dashboard-header">
+    <p class="dashboard-role">Admin Workspace</p>
+    <h1>Platform Security Console</h1>
+    <p class="dashboard-subtitle">Manage policies, role assignments, and operational controls.</p>
+  </header>
+
+  <main class="dashboard-grid">
+    <article class="dashboard-card control-card" *ngFor="let item of controls">
+      <span class="control-key">{{ item.key }}</span>
+      <strong>{{ item.value }}</strong>
+    </article>
+  </main>
+
+  <app-dictionary></app-dictionary>
+</section>

@@ -1,0 +1,146 @@
+.dashboard-shell {
+  --accent: #0f766e;
+  --surface: #ecf5f3;
+  --line: #cfe2df;
+  margin: 18px;
+  border-radius: 18px;
+  border: 1px solid #d9e1ea;
+  background: linear-gradient(130deg, #ffffff, var(--surface));
+  box-shadow: 0 16px 36px rgba(31, 41, 55, 0.12);
+  padding: 20px;
+}
+
+.dashboard-header {
+  margin-bottom: 16px;
+}
+
+.dashboard-role {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+h1 {
+  margin: 8px 0;
+}
+
+.dashboard-subtitle,
+p {
+  color: #475569;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-grid.single-column {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.search-box input {
+  width: 100%;
+  border: 1px solid #cfe2df;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.autocomplete-dropdown {
+  margin-top: 8px;
+  border: 1px solid #d7ebe7;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.suggestion-item {
+  padding: 9px 12px;
+  border-top: 1px solid #eef7f5;
+  cursor: pointer;
+}
+
+.suggestion-item:first-child {
+  border-top: 0;
+}
+
+.btn-notify {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #d7ebe7;
+  padding: 8px;
+  text-align: left;
+}
+
+.inline {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dnd-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.dnd-row input {
+  margin-left: 6px;
+}
+
+.mini-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mini-item {
+  border: 1px solid #d7ebe7;
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  gap: 2px;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.error-msg {
+  color: #b91c1c;
+}
+
+.no-results-msg {
+  color: #64748b;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

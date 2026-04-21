@@ -1,0 +1,128 @@
+.admin-panel {
+  border: 1px solid #f0d5c7;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+h3,
+h4 {
+  margin: 0 0 10px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 14px;
+}
+
+td {
+  border: 1px solid #f4e4da;
+  padding: 8px;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.form-row {
+  display: grid;
+  gap: 6px;
+}
+
+.form-row select {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.json-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+  font-family: Consolas, "Courier New", monospace;
+  margin-bottom: 10px;
+}
+
+.json-actions {
+  margin-bottom: 10px;
+}
+
+.mapping-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mapping-head {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7c2d12;
+  font-weight: 700;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #7c2d12;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.audit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.audit-header button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: #9a3412;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.audit-log {
+  display: grid;
+  gap: 8px;
+}
+
+.log-item {
+  border-left: 3px solid #9a3412;
+  background: #fff7f2;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #334155;
+}
+
+.log-item span {
+  color: #9a3412;
+  font-weight: 700;
+}
+
+.error-msg {
+  color: #b91c1c;
+}
+
+.success-msg {
+  color: #047857;
+}

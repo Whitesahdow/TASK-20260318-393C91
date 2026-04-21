@@ -1,9 +1,36 @@
-<div class="login-container">
-  <h2>City Bus Operation Platform</h2>
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <input formControlName="username" placeholder="Username" type="text" />
-    <input formControlName="password" placeholder="Password (Min 8 chars)" type="password" />
-    <button type="submit" [disabled]="loginForm.invalid">Login</button>
-    <p *ngIf="error" class="error-msg">{{ error }}</p>
-  </form>
-</div>
+<section class="auth-page">
+  <article class="hero-panel">
+    <p class="eyebrow">City Bus Operation and Service Coordination Platform</p>
+    <h1>Secure Sign In</h1>
+    <p>
+      Sign in to your role-specific workspace. Use your assigned local account in this offline LAN environment.
+    </p>
+
+    <div class="health-card" [class.down]="backendStatus !== 'UP'">
+      <p class="label">Backend Health</p>
+      <strong>{{ backendStatus }}</strong>
+      <span>{{ backendService }}</span>
+      <small>Trace ID: {{ traceId }}</small>
+      <button type="button" (click)="refreshBackendStatus()">Refresh Health</button>
+    </div>
+  </article>
+
+  <article class="form-panel">
+    <h2>Welcome Back</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <label>
+        Username
+        <input formControlName="username" placeholder="Enter username" type="text" />
+      </label>
+
+      <label>
+        Password
+        <input formControlName="password" placeholder="Minimum 8 characters" type="password" />
+      </label>
+
+      <button type="submit" [disabled]="loginForm.invalid || submitting">Login</button>
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
+      <a class="register-link" routerLink="/register">Need an account? Register here</a>
+    </form>
+  </article>
+</section>

@@ -3,7 +3,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export type UserRole = 'ADMIN' | 'DISPATCHER' | 'PASSENGER';
+
 export interface AuthUser {
   username: string;
-  role: string;
+  role: UserRole;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  role: UserRole;
 }

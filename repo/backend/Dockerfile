@@ -2,7 +2,10 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-RUN mvn -q -DskipTests dependency:go-offline
+RUN mvn -q -DskipTests -DincludePluginDependencies=true dependency:go-offline \
+    && mvn -q dependency:get -Dartifact=org.apache.maven.surefire:surefire-junit-platform:3.2.5 -Dtransitive=true \
+    && mvn -q dependency:get -Dartifact=org.junit.platform:junit-platform-launcher:1.10.3 -Dtransitive=true \
+    && mvn -q dependency:get -Dartifact=org.junit.platform:junit-platform-engine:1.10.3 -Dtransitive=true
 
 COPY src ./src
 RUN mvn -q -DskipTests clean package

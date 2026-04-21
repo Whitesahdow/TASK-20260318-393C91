@@ -1,0 +1,89 @@
+<section class="admin-panel">
+  <h3>Template Processor</h3>
+  <p>Import raw JSON or HTML templates and map external keys into system fields.</p>
+
+  <div class="form-row">
+    <label for="templateType">Template Type</label>
+    <select id="templateType" [value]="templateType" (change)="templateType = $any($event.target).value">
+      <option value="JSON">JSON</option>
+      <option value="HTML">HTML</option>
+    </select>
+  </div>
+
+  <label class="json-label" for="templatePayload">Raw Template Payload</label>
+  <textarea
+    id="templatePayload"
+    [value]="templatePayload"
+    (input)="templatePayload = $any($event.target).value"
+    rows="10"
+  ></textarea>
+
+  <h4>Field Mapping</h4>
+  <div class="mapping-grid">
+    <div class="mapping-head">Source Key</div>
+    <div class="mapping-head">System Field</div>
+    <ng-container *ngFor="let mapping of mappings; let i = index">
+      <input
+        [value]="mapping.sourceKey"
+        (input)="mappings[i].sourceKey = $any($event.target).value"
+        placeholder="e.g. apt_type"
+      />
+      <select [value]="mapping.targetField" (change)="mappings[i].targetField = $any($event.target).value">
+        <option value="name">name</option>
+        <option value="address">address</option>
+        <option value="residentialArea">residentialArea</option>
+        <option value="apartmentType">apartmentType</option>
+        <option value="area">area</option>
+        <option value="unit">unit</option>
+        <option value="price">price</option>
+      </select>
+    </ng-container>
+  </div>
+  <button type="button" (click)="runTemplateImport()">Run Template Import</button>
+
+  <h3>Field Standard Dictionaries</h3>
+  <p *ngIf="loadingConfig">Loading configuration...</p>
+  <table *ngIf="!loadingConfig">
+    <tr *ngFor="let dict of dictionaries; let i = index">
+      <td><input [value]="dict.key" (input)="dictionaries[i].key = $any($event.target).value" /></td>
+      <td><input [value]="dict.value" (input)="dictionaries[i].value = $any($event.target).value" /></td>
+    </tr>
+  </table>
+  <button type="button" (click)="saveDictionaries()" [disabled]="savingConfig">Save Dictionaries</button>
+
+  <h3>Configurable Cleaning Rules</h3>
+  <table *ngIf="!loadingConfig">
+    <tr *ngFor="let rule of rules; let i = index">
+      <td><input [value]="rule.key" (input)="rules[i].key = $any($event.target).value" /></td>
+      <td><input [value]="rule.value" (input)="rules[i].value = $any($event.target).value" /></td>
+      <td>
+        <select [value]="rule.enabled ? 'true' : 'false'" (change)="rules[i].enabled = $any($event.target).value === 'true'">
+          <option value="true">Enabled</option>
+          <option value="false">Disabled</option>
+        </select>
+      </td>
+    </tr>
+  </table>
+  <button type="button" (click)="saveRules()" [disabled]="savingConfig">Save Rules</button>
+
+  <p *ngIf="importFeedback" class="success-msg">{{ importFeedback }}</p>
+  <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+  <div class="audit-header">
+    <h4>Import Audit Log</h4>
+    <button type="button" (click)="loadAuditLogs()">Refresh</button>
+  </div>
+
+  <p *ngIf="loadingAudit">Loading audit logs...</p>
+  <div class="audit-log" *ngIf="!loadingAudit">
+    <div *ngFor="let log of importAuditLogs" class="log-item">
+      <span>{{ log.timestamp | date: 'yyyy-MM-dd HH:mm:ss' }}</span> |
+      Trace: {{ log.traceId }} |
+      Result: {{ log.result }} |
+      Source: {{ log.sourceType }} |
+      Stop: {{ log.stopName }} |
+      Action: {{ log.changesMade }}
+    </div>
+    <p *ngIf="importAuditLogs.length === 0">No import audit rows available yet.</p>
+  </div>
+</section>

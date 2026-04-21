@@ -1,6 +1,7 @@
 package com.busapp.controller;
 
 import com.busapp.service.AuthService;
+import com.busapp.service.RegisterRequest;
 import com.busapp.service.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,5 +25,10 @@ public class AuthController {
         String username = credentials.get("username");
         String password = credentials.get("password");
         return ResponseEntity.ok(authService.login(username, password));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.status(201).body(authService.register(request));
     }
 }

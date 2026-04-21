@@ -1,0 +1,31 @@
+<section class="register-page">
+  <article class="register-panel">
+    <p class="eyebrow">Account Provisioning</p>
+    <h1>Create a New User</h1>
+    <p>Register a passenger or dispatcher account. Administrator accounts are seeded by the backend.</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <label>
+        Username
+        <input formControlName="username" placeholder="Enter username" type="text" />
+      </label>
+
+      <label>
+        Password
+        <input formControlName="password" placeholder="Minimum 8 characters" type="password" />
+      </label>
+
+      <label>
+        Role
+        <select formControlName="role">
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </label>
+
+      <button type="submit" [disabled]="registerForm.invalid || submitting">Create Account</button>
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
+      <p *ngIf="success" class="success-msg">{{ success }}</p>
+      <a class="login-link" routerLink="/login">Back to login</a>
+    </form>
+  </article>
+</section>
