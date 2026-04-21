@@ -76,7 +76,7 @@ export class DictionaryComponent implements OnInit {
   loadAuditLogs(): void {
     this.loadingAudit = true;
     this.error = '';
-    this.http.get<ImportAuditLog[]>('/api/admin/stops/audit/imports').subscribe({
+    this.http.get<ImportAuditLog[]>('/api/v1/admin/stops/audit/imports').subscribe({
       next: (logs) => {
         this.importAuditLogs = logs;
         this.loadingAudit = false;
@@ -91,10 +91,10 @@ export class DictionaryComponent implements OnInit {
 
   loadConfig(): void {
     this.loadingConfig = true;
-    this.http.get<any[]>('/api/admin/stops/config/dictionaries').subscribe({
+    this.http.get<any[]>('/api/v1/admin/stops/config/dictionaries').subscribe({
       next: (entries) => {
         this.dictionaries = entries.map((x) => ({ key: x.dictKey, value: x.dictValue }));
-        this.http.get<any[]>('/api/admin/stops/config/rules').subscribe({
+        this.http.get<any[]>('/api/v1/admin/stops/config/rules').subscribe({
           next: (rules) => {
             this.rules = rules.map((x) => ({ key: x.ruleKey, value: x.ruleValue, enabled: x.enabled }));
             this.loadingConfig = false;
@@ -133,7 +133,7 @@ export class DictionaryComponent implements OnInit {
       mappings
     };
 
-    this.http.post<any>('/api/admin/stops/import-template', request).subscribe({
+    this.http.post<any>('/api/v1/admin/stops/import-template', request).subscribe({
       next: (response) => {
         this.importFeedback = `Import success for ${response.stopName} (version ${response.versionNumber}).`;
         this.loadAuditLogs();
@@ -146,7 +146,7 @@ export class DictionaryComponent implements OnInit {
 
   saveDictionaries(): void {
     this.savingConfig = true;
-    this.http.put('/api/admin/stops/config/dictionaries', this.dictionaries).subscribe({
+    this.http.put('/api/v1/admin/stops/config/dictionaries', this.dictionaries).subscribe({
       next: () => {
         this.savingConfig = false;
         this.importFeedback = 'Dictionary standards updated.';
@@ -160,7 +160,7 @@ export class DictionaryComponent implements OnInit {
 
   saveRules(): void {
     this.savingConfig = true;
-    this.http.put('/api/admin/stops/config/rules', this.rules).subscribe({
+    this.http.put('/api/v1/admin/stops/config/rules', this.rules).subscribe({
       next: () => {
         this.savingConfig = false;
         this.importFeedback = 'Cleaning rules updated.';

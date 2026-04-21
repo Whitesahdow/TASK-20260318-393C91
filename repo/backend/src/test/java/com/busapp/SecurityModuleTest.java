@@ -50,7 +50,7 @@ public class SecurityModuleTest {
     @Test
     void whenPasswordShort_thenReturns400() throws Exception {
         String shortPasswordJson = "{\"username\":\"test\", \"password\":\"123\"}";
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(shortPasswordJson))
                 .andExpect(status().isBadRequest());

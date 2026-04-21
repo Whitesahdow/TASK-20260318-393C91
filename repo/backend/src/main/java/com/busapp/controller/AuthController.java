@@ -32,7 +32,11 @@ public class AuthController {
         String username = credentials.get("username");
         String password = credentials.get("password");
         UserResponse response = authService.login(username, password);
+        
+        org.springframework.security.core.context.SecurityContext context = SecurityContextHolder.getContext();
         HttpSession session = request.getSession(true);
+        session.setAttribute(org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+        
         return ResponseEntity.ok(response);
     }
 

@@ -38,22 +38,27 @@ public class WorkflowService {
             task.setComment("Returned to pending for resubmission");
             task.setProgress(Math.max(10, task.getProgress() - 20));
             task.setApprovedByAdmin(false);
+            task.setAdminUsername(null);
             task.setApprovedByDispatcher(false);
+            task.setDispatcherUsername(null);
             return taskRepository.save(task);
         }
 
         String role = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString();
+        String username = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
         
         if ("RISKY".equals(task.getBranch())) {
             if (role.contains("ROLE_ADMIN")) {
                 task.setApprovedByAdmin(true);
+                task.setAdminUsername(username);
             } else if (role.contains("ROLE_DISPATCHER")) {
                 task.setApprovedByDispatcher(true);
+                task.setDispatcherUsername(username);
             }
 
             if (task.isApprovedByAdmin() && task.isApprovedByDispatcher()) {
                 task.setStatus(TaskStatus.APPROVED);
-                task.setComment("Jointly Approved");
+                task.setComment(String.format("Jointly Approved by Disp: %s and Admin: %s", task.getDispatcherUsername(), task.getAdminUsername()));
                 task.setProgress(100);
             } else {
                 task.setComment("Pending parallel approval");
@@ -61,7 +66,7 @@ public class WorkflowService {
             }
         } else {
             task.setStatus(TaskStatus.APPROVED);
-            task.setComment("Approved");
+            task.setComment("Approved by " + username);
             task.setProgress(100);
         }
 

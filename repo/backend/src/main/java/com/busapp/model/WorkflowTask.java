@@ -42,8 +42,14 @@ public class WorkflowTask {
     @Column(nullable = false)
     private boolean approvedByDispatcher = false;
 
+    @Column
+    private String dispatcherUsername;
+
     @Column(nullable = false)
     private boolean approvedByAdmin = false;
+
+    @Column
+    private String adminUsername;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -66,8 +72,12 @@ public class WorkflowTask {
     public void setComment(String comment) { this.comment = comment; }
     public boolean isApprovedByDispatcher() { return approvedByDispatcher; }
     public void setApprovedByDispatcher(boolean approvedByDispatcher) { this.approvedByDispatcher = approvedByDispatcher; }
+    public String getDispatcherUsername() { return dispatcherUsername; }
+    public void setDispatcherUsername(String dispatcherUsername) { this.dispatcherUsername = dispatcherUsername; }
     public boolean isApprovedByAdmin() { return approvedByAdmin; }
     public void setApprovedByAdmin(boolean approvedByAdmin) { this.approvedByAdmin = approvedByAdmin; }
+    public String getAdminUsername() { return adminUsername; }
+    public void setAdminUsername(String adminUsername) { this.adminUsername = adminUsername; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

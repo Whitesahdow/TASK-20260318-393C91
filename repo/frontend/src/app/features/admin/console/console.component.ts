@@ -36,10 +36,10 @@ export class ConsoleComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.http.get<WeightEntry[]>('/api/admin/maintenance/weights').subscribe({
+    this.http.get<WeightEntry[]>('/api/v1/admin/maintenance/weights').subscribe({
       next: (weights) => {
         this.weights = weights;
-        this.http.get<NotificationTemplate[]>('/api/admin/maintenance/templates').subscribe({
+        this.http.get<NotificationTemplate[]>('/api/v1/admin/maintenance/templates').subscribe({
           next: (templates) => {
             this.templates = templates;
             this.loading = false;
@@ -58,14 +58,14 @@ export class ConsoleComponent implements OnInit {
   }
 
   saveWeights(): void {
-    this.http.put('/api/admin/maintenance/weights', this.weights).subscribe({
+    this.http.put('/api/v1/admin/maintenance/weights', this.weights).subscribe({
       next: () => this.message = 'Search ranking weights updated.',
       error: () => this.message = 'Could not update ranking weights.'
     });
   }
 
   saveTemplates(): void {
-    this.http.put('/api/admin/maintenance/templates', this.templates).subscribe({
+    this.http.put('/api/v1/admin/maintenance/templates', this.templates).subscribe({
       next: () => this.message = 'Notification templates updated.',
       error: () => this.message = 'Could not update templates.'
     });

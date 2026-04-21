@@ -46,7 +46,7 @@ PostgreSQL 15: Reliable relational storage for versioned stop structures and com
 Docker: Canonical runtime contract; ensures "Offline LAN" deployment is reproducible and isolated.
 Salted BCrypt: Ensures industry-standard password security without needing external auth providers.
 Data Cleaning & Normalization Logic
-Standardization: All area fields are unified as ㎡ and prices as yuan/month.
+Standardization: All area fields are unified as sqm and prices as yuan/month.
 Missing Values: If a source field is empty, the system marks it as NULL and generates a source log entry for audit.
 Versioning: Every change to a bus stop structure creates a new entry in the stop_versions table, allowing for rollback and historical review.
 Observability & Performance Metrics

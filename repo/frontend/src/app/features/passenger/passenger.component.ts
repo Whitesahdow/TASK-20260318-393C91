@@ -119,7 +119,10 @@ export class PassengerComponent implements OnInit, OnDestroy {
     }
     this.http.post(
       `/api/v1/notifications/reservations`,
-      { stopName: result.stopName }
+      { 
+        stopName: result.stopName,
+        arrivalEta: new Date(Date.now() + 60 * 60 * 1000).toISOString() // Mock 1 hour ETA
+      }
     ).subscribe({
       next: () => {
         result.reminderEnabled = true;

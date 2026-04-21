@@ -26,6 +26,7 @@
           </div>
           <span class="status-pill" [ngClass]="task.branch.toLowerCase()">{{ task.status }} · {{ task.branch }}</span>
           <button type="button" (click)="returnTask(task.id)">Return</button>
+          <button type="button" (click)="approveTask(task.id)">Approve</button>
         </div>
         <p *ngIf="tasks.length === 0">No tasks available.</p>
       </div>

@@ -72,7 +72,7 @@
       <p *ngIf="messagesLoading">Loading message center...</p>
       <div class="mini-list" *ngIf="!messagesLoading">
         <div class="mini-item" *ngFor="let msg of messages">
-          <strong>{{ msg.typeLabel }} · {{ msg.status }}</strong>
+          <strong>{{ msg.typeLabel }} - {{ msg.status }}</strong>
           <span>{{ msg.finalContent }}</span>
           <span>{{ msg.scheduledAt | date:'short' }}</span>
         </div>

@@ -41,29 +41,41 @@ public class PassengerNotificationController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<MessageTask>> messages() {
-        return ResponseEntity.ok(notificationService.listMessages(getUsername()));
+    public ResponseEntity<List<com.busapp.model.MessageResponse>> messages() {
+        List<com.busapp.model.MessageResponse> dtos = notificationService.listMessages(getUsername()).stream()
+            .map(com.busapp.model.MessageResponse::new)
+            .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/latest")
-    public ResponseEntity<MessageTask> latestMessage() {
-        return ResponseEntity.ok(notificationService.latestMessage(getUsername()));
+    public ResponseEntity<com.busapp.model.MessageResponse> latestMessage() {
+        MessageTask task = notificationService.latestMessage(getUsername());
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(new com.busapp.model.MessageResponse(task));
     }
 
     @PostMapping("/reservations")
-    public ResponseEntity<MessageTask> enqueueReservation(
+    public ResponseEntity<com.busapp.model.MessageResponse> enqueueReservation(
             @RequestBody Map<String, String> body
     ) {
         String stopName = body.getOrDefault("stopName", "Unknown Stop");
-        return ResponseEntity.ok(notificationService.enqueueReservation(getUsername(), stopName));
+        String arrivalEtaStr = body.get("arrivalEta");
+        LocalDateTime arrivalEta = null;
+        if (arrivalEtaStr != null) {
+            arrivalEta = LocalDateTime.parse(arrivalEtaStr);
+        }
+        return ResponseEntity.ok(new com.busapp.model.MessageResponse(notificationService.enqueueReservation(getUsername(), stopName, arrivalEta)));
     }
 
     @PostMapping("/missed-checkin")
-    public ResponseEntity<MessageTask> enqueueMissedCheckIn(
+    public ResponseEntity<com.busapp.model.MessageResponse> enqueueMissedCheckIn(
             @RequestBody Map<String, String> body
     ) {
         LocalDateTime startTime = LocalDateTime.parse(body.get("busStartTime"));
-        return ResponseEntity.ok(notificationService.enqueueMissedCheckIn(getUsername(), startTime));
+        return ResponseEntity.ok(new com.busapp.model.MessageResponse(notificationService.enqueueMissedCheckIn(getUsername(), startTime)));
     }
 }
 

@@ -59,6 +59,13 @@ export class DispatcherComponent implements OnInit {
     });
   }
 
+  approveTask(taskId: number): void {
+    this.http.post(`/api/v1/dispatch/tasks/${taskId}/approve`, {}).subscribe({
+      next: () => this.loadTasks(),
+      error: () => this.error = 'Failed to approve task.'
+    });
+  }
+
   batchApprove(): void {
     if (this.selectedTaskIds.length === 0) {
       return;

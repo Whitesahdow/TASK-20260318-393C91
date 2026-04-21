@@ -34,7 +34,7 @@ public class AuthService {
         UserEntity user = new UserEntity();
         user.setUsername(request.getUsername());
         user.setPasswordHash(encoder.encode(request.getPassword()));
-        user.setRole(request.getRole());
+        user.setRole(UserRole.PASSENGER);
         userRepository.save(user);
 
         return new UserResponse(user.getUsername(), user.getRole());
@@ -67,10 +67,6 @@ public class AuthService {
 
         if (request.getPassword() == null || request.getPassword().length() < 8) {
             throw new ValidationException("Password complexity failed: Minimum 8 characters required.");
-        }
-
-        if (request.getRole() == null) {
-            throw new ValidationException("Role is required.");
         }
     }
 }

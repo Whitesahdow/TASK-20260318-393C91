@@ -48,5 +48,5 @@ Data Integration & Maintenance (Admin)
 Method	Path	Auth	Description
 POST	/admin/import	Admin	Parse HTML/JSON templates and trigger cleaning
 GET	/admin/audit-logs	Admin	View data cleaning history and source logs
-PUT	/admin/dictionaries	Admin	Maintain field standard dictionaries (㎡, yuan)
+PUT	/admin/dictionaries	Admin	Maintain field standard dictionaries (sqm, yuan)
 PUT	/admin/ranking-weights	Admin	Adjust Frequency vs Popularity weights

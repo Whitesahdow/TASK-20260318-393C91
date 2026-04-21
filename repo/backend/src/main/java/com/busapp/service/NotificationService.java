@@ -49,7 +49,7 @@ public class NotificationService {
     }
 
     @Transactional
-    public MessageTask enqueueReservation(String username, String stopName) {
+    public MessageTask enqueueReservation(String username, String stopName, LocalDateTime arrivalEta) {
         UserEntity user = findUser(username);
         NotificationPreference pref = preferenceRepository.findById(user.getId()).orElseGet(() -> defaultPreference(user.getId()));
 
@@ -63,12 +63,12 @@ public class NotificationService {
         reservation.setTraceId(UUID.randomUUID().toString().substring(0, 8));
         MessageTask savedReservation = queueRepository.save(reservation);
 
-        if (pref.isArrivalRemindersEnabled()) {
+        if (pref.isArrivalRemindersEnabled() && arrivalEta != null) {
             MessageTask reminder = new MessageTask();
             reminder.setUserId(user.getId());
             reminder.setTypeLabel("Arrival Reminder");
             reminder.setRawContent("Reminder: Your bus to " + stopName + " arrives in " + pref.getLeadTimeMinutes() + " minutes.");
-            reminder.setScheduledAt(LocalDateTime.now().minusSeconds(1));
+            reminder.setScheduledAt(arrivalEta.minusMinutes(pref.getLeadTimeMinutes()));
             reminder.setStatus(MessageStatus.PENDING);
             reminder.setSensitivity(sensitivityForRole(user.getRole()));
             reminder.setTraceId(UUID.randomUUID().toString().substring(0, 8));
