@@ -12,12 +12,7 @@
         <input formControlName="password" placeholder="Minimum 8 characters" type="password" />
       </label>
 
-      <label>
-        Role
-        <select formControlName="role">
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-        </select>
-      </label>
+      <input formControlName="role" type="hidden" />
 
       <button type="submit" [disabled]="registerForm.invalid || submitting">Create Account</button>
       <p *ngIf="error" class="error-msg">{{ error }}</p>

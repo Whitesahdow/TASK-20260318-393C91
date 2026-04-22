@@ -91,15 +91,11 @@ export class PassengerComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.loading = false;
           this.suggestions = data;
-          this.results = data.map((x) => ({ ...x, reminderEnabled: false }));
-          this.noResults = this.searchQuery.trim().length >= 2 && this.results.length === 0;
         },
         error: () => {
           this.loading = false;
-          this.error = 'Unable to fetch search results.';
+          this.error = 'Unable to fetch autocomplete suggestions.';
           this.suggestions = [];
-          this.results = [];
-          this.noResults = false;
         }
       });
   }
@@ -111,8 +107,29 @@ export class PassengerComponent implements OnInit, OnDestroy {
   selectStop(suggestion: SearchResult): void {
     this.searchQuery = suggestion.stopName;
     this.suggestions = [];
-    this.results = [{ ...suggestion, reminderEnabled: suggestion.reminderEnabled ?? false }];
+  }
+
+  searchStops(): void {
+    if (!this.searchQuery || this.searchQuery.trim().length < 2) {
+      return;
+    }
+    this.loading = true;
+    this.error = '';
     this.noResults = false;
+    this.suggestions = [];
+    this.http.get<SearchResult[]>(`/api/v1/search/results?query=${encodeURIComponent(this.searchQuery.trim())}`)
+      .subscribe({
+        next: (data) => {
+          this.loading = false;
+          this.results = data.map((x) => ({ ...x, reminderEnabled: false }));
+          this.noResults = this.results.length === 0;
+        },
+        error: () => {
+          this.loading = false;
+          this.error = 'Unable to fetch search results.';
+          this.results = [];
+        }
+      });
   }
 
   toggleReminder(result: SearchResult): void {

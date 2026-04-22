@@ -5,19 +5,22 @@
 
   <main class="dashboard-grid single-column">
     <article class="dashboard-card search-box">
-      <input
-        type="text"
-        placeholder="Search by Route, Stop, or Pinyin (e.g., 'B12' or 'ca')"
-        [(ngModel)]="searchQuery"
-        (input)="onInputChange()"
-      />
+      <div class="search-row">
+        <input
+          type="text"
+          placeholder="Search by Route, Stop, or Pinyin (e.g., 'B12' or 'ca')"
+          [(ngModel)]="searchQuery"
+          (input)="onInputChange()"
+        />
+        <button class="btn-notify" (click)="searchStops()">Search</button>
+      </div>
 
       <div class="autocomplete-dropdown" *ngIf="suggestions.length > 0">
         <div *ngFor="let s of suggestions" (click)="selectStop(s)" class="suggestion-item">
           {{ s.routeNumber }} - {{ s.stopName }} ({{ s.initials }})
         </div>
       </div>
-      <p *ngIf="loading">Loading suggestions...</p>
+      <p *ngIf="loading">Loading...</p>
       <p *ngIf="error" class="error-msg">{{ error }}</p>
       <p *ngIf="!loading && !error && noResults" class="no-results-msg">No results found.</p>
     </article>

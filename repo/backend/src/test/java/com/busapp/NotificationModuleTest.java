@@ -24,6 +24,8 @@ public class NotificationModuleTest {
     private NotificationPreferenceRepository preferenceRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private com.busapp.repository.NotificationTemplateRepository templateRepository;
 
     @Test
     void whenTimeIs2300_andDNDIs22to07_thenSuppress() {
@@ -38,7 +40,7 @@ public class NotificationModuleTest {
 
     @Test
     void whenTimeIs5MinAfterStart_thenTriggerMissedCheckIn() {
-        NotificationService notificationService = new NotificationService(preferenceRepository, queueRepository, userRepository);
+        NotificationService notificationService = new NotificationService(preferenceRepository, queueRepository, userRepository, templateRepository);
         LocalDateTime busStartTime = LocalDateTime.now().minusMinutes(6);
         boolean shouldTrigger = notificationService.checkMissedCheckIn(busStartTime);
         assertTrue(shouldTrigger);

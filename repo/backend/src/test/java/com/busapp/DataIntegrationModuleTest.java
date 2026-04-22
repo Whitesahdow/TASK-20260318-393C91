@@ -28,6 +28,8 @@ public class DataIntegrationModuleTest {
     private CleaningRuleRepository cleaningRuleRepository;
     @Mock
     private ImportAuditLogRepository importAuditLogRepository;
+    @Mock
+    private com.busapp.repository.FieldDictionaryRepository fieldDictionaryRepository;
 
     @InjectMocks
     private DataCleaningService cleaningService;
@@ -35,6 +37,7 @@ public class DataIntegrationModuleTest {
     @Test
     void whenAreaInSqft_thenConvertToSqm() {
         when(cleaningRuleRepository.findByRuleKey(any())).thenReturn(Optional.empty());
+        when(fieldDictionaryRepository.findByDictKey("AREA_UNIT_SUFFIX")).thenReturn(Optional.empty());
         RawInput input = new RawInput();
         input.setName("Central Avenue");
         input.setArea(100.0);
@@ -52,12 +55,13 @@ public class DataIntegrationModuleTest {
         StopVersion result = cleaningService.cleanAndTransform(input);
 
         assertNull(result.getAreaSqm());
-        assertEquals("NULL", result.getStopName());
+        assertNull(result.getStopName());
     }
 
     @Test
     void whenSameStopImportedTwice_thenVersionIncrements() {
         when(cleaningRuleRepository.findByRuleKey(any())).thenReturn(Optional.empty());
+        when(fieldDictionaryRepository.findByDictKey("AREA_UNIT_SUFFIX")).thenReturn(Optional.empty());
         RawInput input = new RawInput();
         input.setName("Main Street");
         input.setArea(10.0);

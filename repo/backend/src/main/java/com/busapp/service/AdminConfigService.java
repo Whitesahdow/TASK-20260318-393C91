@@ -23,7 +23,7 @@ public class AdminConfigService {
 
     @Transactional
     public void ensureDefaults() {
-        upsertDictionary("AREA_UNIT_SUFFIX", "sqm");
+        upsertDictionary("AREA_UNIT_SUFFIX", "㎡");
         upsertDictionary("PRICE_UNIT_SUFFIX", "yuan/month");
         upsertRule("SQFT_TO_SQM_FACTOR", "0.092903", true);
         upsertRule("NULL_FALLBACK", "NULL", true);

@@ -21,15 +21,18 @@ public class NotificationService {
     private final NotificationPreferenceRepository preferenceRepository;
     private final MessageQueueRepository queueRepository;
     private final UserRepository userRepository;
+    private final com.busapp.repository.NotificationTemplateRepository templateRepository;
 
     public NotificationService(
             NotificationPreferenceRepository preferenceRepository,
             MessageQueueRepository queueRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            com.busapp.repository.NotificationTemplateRepository templateRepository
     ) {
         this.preferenceRepository = preferenceRepository;
         this.queueRepository = queueRepository;
         this.userRepository = userRepository;
+        this.templateRepository = templateRepository;
     }
 
     public NotificationPreference getPreferenceByUsername(String username) {
@@ -61,18 +64,27 @@ public class NotificationService {
         reservation.setScheduledAt(LocalDateTime.now().minusSeconds(1));
         reservation.setStatus(MessageStatus.PENDING);
         reservation.setSensitivity(sensitivityForRole(user.getRole()));
-        reservation.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+        reservation.setTraceId(org.slf4j.MDC.get("traceId") != null ? org.slf4j.MDC.get("traceId") : UUID.randomUUID().toString().substring(0, 8));
         MessageTask savedReservation = queueRepository.save(reservation);
 
         if (pref.isArrivalRemindersEnabled() && arrivalEta != null) {
             MessageTask reminder = new MessageTask();
             reminder.setUserId(user.getId());
             reminder.setTypeLabel("Arrival Reminder");
-            reminder.setRawContent("Reminder: Your bus to " + stopName + " arrives in " + pref.getLeadTimeMinutes() + " minutes.");
+            
+            String templateBody = templateRepository.findByTemplateKey("ARRIVAL_REMINDER")
+                    .map(t -> t.getTemplateBody())
+                    .orElse("Reminder: Your bus to {stopName} arrives in {leadTimeMinutes} minutes.");
+            
+            String content = templateBody
+                    .replace("{stopName}", stopName != null ? stopName : "Unknown")
+                    .replace("{leadTimeMinutes}", String.valueOf(pref.getLeadTimeMinutes()));
+                    
+            reminder.setRawContent(content);
             reminder.setScheduledAt(arrivalEta.minusMinutes(pref.getLeadTimeMinutes()));
             reminder.setStatus(MessageStatus.PENDING);
             reminder.setSensitivity(sensitivityForRole(user.getRole()));
-            reminder.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+            reminder.setTraceId(org.slf4j.MDC.get("traceId") != null ? org.slf4j.MDC.get("traceId") : UUID.randomUUID().toString().substring(0, 8));
             queueRepository.save(reminder);
         }
 
@@ -88,11 +100,18 @@ public class NotificationService {
         MessageTask task = new MessageTask();
         task.setUserId(user.getId());
         task.setTypeLabel("Missed Check-in");
-        task.setRawContent("Check-in missed for your reservation at stop " + (stopName != null ? stopName : "Unknown"));
+        
+        String templateBody = templateRepository.findByTemplateKey("MISSED_CHECKIN")
+                .map(t -> t.getTemplateBody())
+                .orElse("Check-in missed for your reservation at stop {stopName}");
+                
+        String content = templateBody.replace("{stopName}", stopName != null ? stopName : "Unknown");
+                
+        task.setRawContent(content);
         task.setScheduledAt(LocalDateTime.now().minusSeconds(1));
         task.setStatus(MessageStatus.PENDING);
         task.setSensitivity(sensitivityForRole(user.getRole()));
-        task.setTraceId(UUID.randomUUID().toString().substring(0, 8));
+        task.setTraceId(org.slf4j.MDC.get("traceId") != null ? org.slf4j.MDC.get("traceId") : UUID.randomUUID().toString().substring(0, 8));
         return queueRepository.save(task);
     }
 

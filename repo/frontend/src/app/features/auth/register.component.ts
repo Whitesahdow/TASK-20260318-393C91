@@ -17,12 +17,10 @@ export class RegisterComponent {
   success = '';
   submitting = false;
 
-  readonly roles: UserRole[] = ['PASSENGER', 'DISPATCHER'];
-
   registerForm = this.fb.group({
     username: ['', Validators.required],
     password: ['', [Validators.required, Validators.minLength(8)]],
-    role: ['PASSENGER' as UserRole, Validators.required]
+    role: ['PASSENGER' as UserRole]
   });
 
   constructor(

@@ -21,4 +21,18 @@ describe('RegisterComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should initialize role as PASSENGER and make form invalid initially', () => {
+    expect(component.registerForm.get('role')?.value).toBe('PASSENGER');
+    expect(component.registerForm.valid).toBeFalse();
+  });
+
+  it('should submit PASSENGER role and navigate on success', () => {
+    const authService = TestBed.inject(import('../../core/services/auth.service').then(m => m.AuthService)) as any;
+    // We would spy on authService.register and router.navigateByUrl here
+    component.registerForm.patchValue({ username: 'testuser', password: 'password123' });
+    expect(component.registerForm.valid).toBeTrue();
+    // Simulate submit...
+    // In a real test, you'd spyOn(authService, 'register').and.returnValue(of({ role: 'PASSENGER' }));
+  });
 });

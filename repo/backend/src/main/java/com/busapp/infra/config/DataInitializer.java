@@ -73,6 +73,19 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("[Trace: INIT] Default admin created successfully.");
             }
         }
+        
+        if (userRepository.findByUsername("dispatcher").isEmpty()) {
+            if (adminInitialPassword == null || adminInitialPassword.isBlank()) {
+                log.warn("[Trace: INIT] Dispatcher user not created. ADMIN_INITIAL_PASSWORD is not set.");
+            } else {
+                UserEntity dispatcher = new UserEntity();
+                dispatcher.setUsername("dispatcher");
+                dispatcher.setPasswordHash(passwordEncoder.encode(adminInitialPassword));
+                dispatcher.setRole(UserRole.DISPATCHER);
+                userRepository.save(dispatcher);
+                log.info("[Trace: INIT] Default dispatcher created successfully.");
+            }
+        }
         seedSearchData();
         seedWorkflowData();
         seedNotificationTemplates();

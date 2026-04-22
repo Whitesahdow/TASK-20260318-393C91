@@ -48,6 +48,6 @@ Data Integration & Maintenance (Admin)
 Method	Path	Auth	Description
 POST	/admin/stops/import	Admin	Parse HTML templates and trigger cleaning
 POST	/admin/stops/import-json	Admin	Parse JSON templates and trigger cleaning
-GET	/admin/audit-logs	Admin	View data cleaning history and source logs
-PUT	/admin/dictionaries	Admin	Maintain field standard dictionaries (sqm, yuan)
-PUT	/admin/ranking-weights	Admin	Adjust Frequency vs Popularity weights
+GET	/admin/maintenance/audit-logs	Admin	View data cleaning history and source logs
+PUT	/admin/maintenance/dictionaries	Admin	Maintain field standard dictionaries (sqm, yuan)
+PUT	/admin/maintenance/ranking-weights	Admin	Adjust Frequency vs Popularity weights

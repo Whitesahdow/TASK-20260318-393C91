@@ -7,11 +7,15 @@ import com.busapp.model.WorkflowTask;
 import com.busapp.repository.WorkflowTaskRepository;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WorkflowService {
+    private static final Logger log = LoggerFactory.getLogger(WorkflowService.class);
     private final WorkflowTaskRepository taskRepository;
 
     public WorkflowService(WorkflowTaskRepository taskRepository) {
@@ -34,8 +38,9 @@ public class WorkflowService {
         }
 
         if (action == ApprovalAction.RETURN) {
-            task.setStatus(TaskStatus.PENDING); // Resubmission flow instead of RETURNED
-            task.setComment("Returned to pending for resubmission");
+            log.info("[Trace: {}] Task {} returned for resubmission by {}", MDC.get("traceId"), taskId, org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName());
+            task.setStatus(TaskStatus.RETURNED);
+            task.setComment("Returned for resubmission");
             task.setProgress(Math.max(10, task.getProgress() - 20));
             task.setApprovedByAdmin(false);
             task.setAdminUsername(null);
@@ -70,6 +75,7 @@ public class WorkflowService {
             task.setProgress(100);
         }
 
+        log.info("[Trace: {}] Task {} approval processed. New status: {}", MDC.get("traceId"), taskId, task.getStatus());
         return taskRepository.save(task);
     }
 

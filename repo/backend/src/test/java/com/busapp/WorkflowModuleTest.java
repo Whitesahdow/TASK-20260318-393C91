@@ -12,9 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +39,7 @@ public class WorkflowModuleTest {
 
         WorkflowTask processed = workflowService.processApproval(1L, ApprovalAction.RETURN);
         assertEquals("RISKY", processed.getBranch());
-        assertEquals(TaskStatus.PENDING, processed.getStatus());
+        assertEquals(TaskStatus.RETURNED, processed.getStatus());
     }
 
     @Test

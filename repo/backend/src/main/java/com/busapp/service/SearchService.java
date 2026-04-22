@@ -5,11 +5,14 @@ import com.busapp.repository.SearchRowProjection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SearchService {
+    private static final Logger log = LoggerFactory.getLogger(SearchService.class);
     private final SearchRepository searchRepository;
     private final ConfigService configService;
 
@@ -19,6 +22,7 @@ public class SearchService {
     }
 
     public List<SearchResultDTO> getAutocomplete(String query) {
+        log.info("[Trace: {}] Processing autocomplete for query: {}", MDC.get("traceId"), query);
         if (query == null || query.trim().length() < 2) {
             return List.of();
         }
@@ -53,6 +57,7 @@ public class SearchService {
     }
 
     public com.busapp.model.BusStop getMetadata(Long stopId) {
+        log.info("[Trace: {}] Processing metadata request for stopId: {}", MDC.get("traceId"), stopId);
         com.busapp.model.BusStop stop = searchRepository.findById(stopId)
                 .orElseThrow(() -> new ValidationException("Stop not found: " + stopId));
         // Desensitize housing data

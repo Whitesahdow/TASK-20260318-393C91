@@ -23,15 +23,18 @@ public class DataCleaningService {
     private final StopVersionRepository stopVersionRepository;
     private final CleaningRuleRepository cleaningRuleRepository;
     private final ImportAuditLogRepository importAuditLogRepository;
+    private final com.busapp.repository.FieldDictionaryRepository fieldDictionaryRepository;
 
     public DataCleaningService(
             StopVersionRepository stopVersionRepository,
             CleaningRuleRepository cleaningRuleRepository,
-            ImportAuditLogRepository importAuditLogRepository
+            ImportAuditLogRepository importAuditLogRepository,
+            com.busapp.repository.FieldDictionaryRepository fieldDictionaryRepository
     ) {
         this.stopVersionRepository = stopVersionRepository;
         this.cleaningRuleRepository = cleaningRuleRepository;
         this.importAuditLogRepository = importAuditLogRepository;
+        this.fieldDictionaryRepository = fieldDictionaryRepository;
     }
 
     @Transactional
@@ -101,7 +104,7 @@ public class DataCleaningService {
         if (safeInput.getArea() != null) {
             version.setAreaSqm(convertToSqm(safeInput.getArea(), safeInput.getUnit()));
         } else {
-            log.warn("[Audit] Missing area for stop: {}, source logged", version.getStopName());
+            log.warn("[Trace: {}] [Audit] Missing area for stop: {}, source logged", MDC.get("traceId"), version.getStopName());
             version.setAreaSqm(null);
         }
 
@@ -116,7 +119,12 @@ public class DataCleaningService {
         if (val == null) {
             return null;
         }
-        if (unit != null && "sqft".equalsIgnoreCase(unit.trim())) {
+        String sqmSuffix = fieldDictionaryRepository.findByDictKey("AREA_UNIT_SUFFIX")
+                .map(dict -> dict.getDictValue())
+                .orElse("sqm");
+                
+        if (unit != null && !unit.trim().equalsIgnoreCase(sqmSuffix)) {
+            // Assume it's sqft if it's not the standard dictionary unit.
             return val * readDoubleRule("SQFT_TO_SQM_FACTOR", 0.092903);
         }
         return val;
@@ -143,7 +151,7 @@ public class DataCleaningService {
     private String defaultString(String value, String fallback) {
         String nullFallback = readStringRule("NULL_FALLBACK", fallback);
         if (value == null || value.isBlank()) {
-            return nullFallback;
+            return "NULL".equals(nullFallback) ? null : nullFallback;
         }
         return value.trim();
     }
